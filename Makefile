@@ -1,16 +1,15 @@
 
 all:
-	make parallel -j2
+	make images -j2
 
 nginx_image:
 	+make -C nginx/
 uwsgi_image:
 	+make -C uwsgi/
 
-parallel: nginx_image uwsgi_image
+images: nginx_image uwsgi_image
 
-
-run:
+run: images
 	make run -C uwsgi/
 	make run -C nginx/
 	sudo docker ps
