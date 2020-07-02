@@ -40,7 +40,7 @@ run_debug: $(DEBUG_EXECUTABLE) | $(TRUSTED_CERTIFICATE)
 	@echo "$(RED)$(BOLD_TEXT)MAKE SURE YOU TRUST $(TRUSTED_CERTIFICATE) $(NORM_TEXT)$(NO_COLOR)"
 	@$(DEBUG_EXECUTABLE) $(SERVER_HOSTNAME) $(TRUSTED_CERTIFICATE)|| true
 
-$(TRUSTED_CERTIFICATE):
+$(TRUSTED_CERTIFICATE): MakefileConfig.mk
 	mkdir -p $(dir $(TRUSTED_CERTIFICATE))
 	openssl s_client -connect $(SERVER_HOSTNAME):443 -showcerts < /dev/null 2>/dev/null | openssl x509 -outform PEM > $(TRUSTED_CERTIFICATE)
 
