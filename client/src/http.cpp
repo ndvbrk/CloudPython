@@ -34,7 +34,7 @@ using tcp = net::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 auto request(const http::request<http::string_body> &req,
              const tcp::resolver::query &query,
-             const std::string& trusted_certificate) {
+             const std::string &trusted_certificate) {
   // The io_context is required for all I/O
   net::io_context ioc;
 
@@ -47,7 +47,7 @@ auto request(const http::request<http::string_body> &req,
   // Verify the remote server's certificate
   ctx.load_verify_file(trusted_certificate);
 
-  //ctx.set_verify_mode(boost::asio::ssl::verify_none);
+  // ctx.set_verify_mode(boost::asio::ssl::verify_none);
   ctx.set_verify_mode(ssl::verify_peer);
 
   // These objects perform our I/O
@@ -95,7 +95,8 @@ auto request(const http::request<http::string_body> &req,
   return res;
 }
 
-std::string http_get(const char *host, const char *port, const char *target, int version, const std::string& trusted_certificate) {
+std::string http_get(const char *host, const char *port, const char *target,
+                     int version, const std::string &trusted_certificate) {
   tcp::resolver::query query(host, port);
   // Set up an HTTP GET request message
   http::request<http::string_body> req{http::verb::get, target, version};
@@ -112,8 +113,10 @@ std::string http_get(const char *host, const char *port, const char *target, int
   throw std::runtime_error(error);
 }
 
-std::tuple<http::status, std::string> http_post(const char *host, const char *port, const char *target,
-                 int version, const std::string& trusted_certificate, std::string postdata, std::string content_type) {
+std::tuple<http::status, std::string>
+http_post(const char *host, const char *port, const char *target, int version,
+          const std::string &trusted_certificate, std::string postdata,
+          std::string content_type) {
   tcp::resolver::query query(host, port);
   // Set up an HTTP GET request message
   http::request<http::string_body> req{http::verb::post, target, version};

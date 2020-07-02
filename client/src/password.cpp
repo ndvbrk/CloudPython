@@ -1,25 +1,22 @@
+#include "include/password.h"
+#include <iostream>
 #include <termios.h>
 #include <unistd.h>
-#include <iostream>
-#include "include/password.h"
 
-static void stdin_control(bool enable)
-{
-    struct termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    if( !enable )
-        tty.c_lflag &= ~ECHO;
-    else
-        tty.c_lflag |= ECHO;
+static void stdin_control(bool enable) {
+  struct termios tty;
+  tcgetattr(STDIN_FILENO, &tty);
+  if (!enable)
+    tty.c_lflag &= ~ECHO;
+  else
+    tty.c_lflag |= ECHO;
 
-    (void) tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+  (void)tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }
 
-void enable_silent_input() {
-    stdin_control(false);
-}
+void enable_silent_input() { stdin_control(false); }
 
 void disable_silent_input() {
-    stdin_control(true);
-    std::cout << "\n";
+  stdin_control(true);
+  std::cout << "\n";
 }
