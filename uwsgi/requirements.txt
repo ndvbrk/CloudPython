@@ -1,0 +1,15 @@
+# Basic requirement for web server
+Flask==1.1.1
+uwsgi==2.0.18
+# For interacting with Gmail
+google-api-python-client==1.8.0
+# For storing user password
+passlib==1.7.2
+# For sending users secure tokens over URL
+itsdangerous==1.1.0
+# 2FA
+pyotp==2.3.0
+qrcode==6.1
+Pillow==7.1.1
+# For running user code
+docker==4.2.0
