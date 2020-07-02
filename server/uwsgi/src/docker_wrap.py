@@ -7,16 +7,18 @@ import time
 import random
 user_and_group = '13467:13468'
 
+
 class MyPythonContainer:
+
     def __init__(self):
         client = docker.DockerClient(base_url='unix://var/run/docker.sock')
         client.containers.prune()
         self.container = client.containers.run(
             'python',
-            'tail -f /dev/null', # keep the container open doing nothing
-            cap_drop =['ALL'],
-            network_mode  ='none',
-            read_only = False,
+            'tail -f /dev/null',  # keep the container open doing nothing
+            cap_drop=['ALL'],
+            network_mode='none',
+            read_only=False,
             security_opt=['no-new-privileges'],
             # auto_remove=True,
             detach=True,
@@ -27,7 +29,7 @@ class MyPythonContainer:
         self.container.pause()
 
     @staticmethod
-    def make_tar(name,string):
+    def make_tar(name, string):
         file_like_object = io.BytesIO()
         with tarfile.open(fileobj=file_like_object, mode='w') as tar:
             b = string.encode()
@@ -46,7 +48,7 @@ class MyPythonContainer:
     def download(self, target):
         dirname, basename = os.path.split(target)
         bits, stats = self.container.get_archive(target)
-        
+
         file_like_object = io.BytesIO()
         for chunk in bits:
             file_like_object.write(chunk)
@@ -68,9 +70,9 @@ class MyPythonContainer:
         self.upload(SCRIPT_PATH, script)
 
         self.container.exec_run(
-            ['bash', SCRIPT_PATH], 
-            stdout =False,
-            stderr =False,
+            ['bash', SCRIPT_PATH],
+            stdout=False,
+            stderr=False,
             user=user_and_group,
             detach=True,
             demux=True
@@ -86,26 +88,28 @@ class MyPythonContainer:
             return None
 
         return {
-            'exit_code' : exit_code,
-            'stdout' : stdout,
-            'stderr' : stderr,
+            'exit_code': exit_code,
+            'stdout': stdout,
+            'stderr': stderr,
         }
-    
+
     def cleanup(self):
         self.container.kill()
         self.container.remove()
 
     def __enter__(self):
         return self
+
     def __exit__(self, type, value, traceback):
         self.cleanup()
+
 
 def run_code(code_as_string, timeout):
     with MyPythonContainer() as c:
         c.upload('/tmp/usercode.py', code_as_string)
         c.exec('python /tmp/usercode.py')
         for i in range(timeout):
-            time.sleep(1) 
+            time.sleep(1)
             result = c.exec_result()
             if result is not None:
                 return result
@@ -114,5 +118,6 @@ def run_code(code_as_string, timeout):
         raise TimeoutError('Script timed out')
 
 if __name__ == '__main__':
-    result = run_code("print(5); import sys; print('fatal error', file=sys.stderr)", 10)
+    result = run_code(
+        "print(5); import sys; print('fatal error', file=sys.stderr)", 10)
     print(result)

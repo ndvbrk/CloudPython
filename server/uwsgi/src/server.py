@@ -13,7 +13,7 @@ import io
 
 SECRET_KEY = secrets.token_hex(64)
 tokenizer = URLSafeTimedSerializer(SECRET_KEY)
-EMAIL_CONFIRMATION_SALT= 'email-confirmation-salt'
+EMAIL_CONFIRMATION_SALT = 'email-confirmation-salt'
 ADMIN_APPROVAL_SALT = 'admin-user-approval'
 ADMINS_EMAIL = 'admin@cloudpython.invalid'
 email_service = Gmail()
@@ -31,12 +31,13 @@ def create_button(link, text):
     html += """</table>"""
     return html
 
+
 def rest_api(f):
     @functools.wraps(f)
-    def inner(*args,**kwargs):
-        result, httpcode = f(*args,**kwargs)
+    def inner(*args, **kwargs):
+        result, httpcode = f(*args, **kwargs)
         if type(result) == str:
-            return {'error':result}, httpcode
+            return {'error': result}, httpcode
         elif type(result) == dict:
             # Combine result dict with this dict
             # Users may override the 'ok' value by
@@ -45,11 +46,13 @@ def rest_api(f):
             d.update(result)
             return d, httpcode
         else:
-            return '' , httpcode
-        
+            return '', httpcode
+
     return inner
-    
+
+
 class User:
+
     def __init__(self, email, password):
         self.email = email
         self.password_hash = pbkdf2_sha256.hash(password)
@@ -57,7 +60,7 @@ class User:
         self.await_approval = False
         self.approved = False
         self.totp = self.make_totp()
-    
+
     @staticmethod
     def make_totp():
         secret = pyotp.random_base32()
@@ -69,35 +72,39 @@ class User:
 
     def send_verification_email(self):
         token = tokenizer.dumps(self.email, salt=EMAIL_CONFIRMATION_SALT)
-        confirm_url = url_for('confirm_email', token=token,_external=True)
+        confirm_url = url_for('confirm_email', token=token, _external=True)
 
-        html_content = create_button(confirm_url,'Click Here to activate your account')
-        email_service.send(self.email, 'Activate your account with Cloud Python', html_content)
+        html_content = create_button(
+            confirm_url, 'Click Here to activate your account')
+        email_service.send(
+            self.email, 'Activate your account with Cloud Python', html_content)
 
     def request_approval_from_admin(self):
         if self.await_approval:
             return
         token = tokenizer.dumps(self.email, salt=ADMIN_APPROVAL_SALT)
-        approve_url = url_for('approve_user', token=token,_external=True)
+        approve_url = url_for('approve_user', token=token, _external=True)
 
         html_content = f'The user {self.email} has requested to use your platform.'
         html_content += '<br>'
-        html_content += create_button(approve_url, 'Clicking here will activate his account')
+        html_content += create_button(
+            approve_url, 'Clicking here will activate his account')
 
         email_service.send(ADMINS_EMAIL, f'Cloud Python service access request: {self.email}', html_content)
 
         self.await_approval = True
 
     def send_welcome_email(self):
-        email_service.send(self.email, 'Cloud Python: Account activated by administrator', '')
+        email_service.send(
+            self.email, 'Cloud Python: Account activated by administrator', '')
 
     def assert_execute(self, password, totp):
         if pbkdf2_sha256.verify(password, self.password_hash) != True:
             raise Unauthorised()
-        
+
         if True != self.email_verified:
             raise Unauthorised()
-        
+
         if True != self.verify_totp(totp):
             raise Unauthorised()
 
@@ -105,7 +112,9 @@ class User:
             # Consider FORBIDDEN instead?
             raise Unauthorised()
 
+
 class UserDB:
+
     def __init__(self):
         self.all_users = dict()
 
@@ -134,9 +143,10 @@ class UserDB:
         """
         Runs in response to a user registering for the first time
         """
-        ten_minutes = 60*10
+        ten_minutes = 60 * 10
         try:
-            email = tokenizer.loads(token, max_age=ten_minutes, salt=EMAIL_CONFIRMATION_SALT)
+            email = tokenizer.loads(
+                token, max_age=ten_minutes, salt=EMAIL_CONFIRMATION_SALT)
         except (SignatureExpired, BadSignature) as e:
             raise BadRequest()
 
@@ -147,9 +157,9 @@ class UserDB:
         if not user.approved:
             response = ['Account is awaiting approval by site administator']
         else:
-            # Happens if the user clicks the same link 
-            # again, after already being approved by admin 
-            response =  ['Account is ready to use service']
+            # Happens if the user clicks the same link
+            # again, after already being approved by admin
+            response = ['Account is ready to use service']
 
         totp_url = user.totp.provisioning_uri('Cloud Python')
         qrcode_image = qrcode.make(totp_url)
@@ -159,15 +169,17 @@ class UserDB:
         encoded = base64.b64encode(image_bytes).decode('ascii')
         image_html = f'<img src="data:image/png;base64,{encoded}"/>'
 
-        response += ['Here is a QR code you should load into a 2FA authentication App']
+        response += [
+            'Here is a QR code you should load into a 2FA authentication App']
         response += [image_html]
         response += [f'<a href="{totp_url}">Or you may just click this provisioning URI</a>']
         return '<br>'.join(response)
 
     def process_admin_approval(self, token):
-        ten_minutes = 60*10
+        ten_minutes = 60 * 10
         try:
-            email = tokenizer.loads(token, max_age=ten_minutes, salt=ADMIN_APPROVAL_SALT)
+            email = tokenizer.loads(
+                token, max_age=ten_minutes, salt=ADMIN_APPROVAL_SALT)
         except (SignatureExpired, BadSignature) as e:
             raise BadRequest()
 
@@ -179,7 +191,7 @@ class UserDB:
             return f'Error: {email} did not register'
 
         user = self.all_users[email]
-        
+
         if user.email_verified is not True:
             # Dead code, in theory.
             # If he didnt register, how come it is approved?
@@ -190,7 +202,7 @@ class UserDB:
         user.approved = True
 
         user.send_welcome_email()
-        
+
         return f'{email}  has been approved to use our services'
 
     def assert_execute(self, email, password, totp):
@@ -201,7 +213,8 @@ class UserDB:
 
 user_database = UserDB()
 
-@app.route('/api/execute', methods = ['POST'])
+
+@app.route('/api/execute', methods=['POST'])
 @rest_api
 @catch_errors
 def api_execute():
@@ -219,7 +232,8 @@ def api_execute():
     except TimeoutError:
         return 'request timed out'
 
-@app.route('/api/register', methods = ['POST'])
+
+@app.route('/api/register', methods=['POST'])
 @rest_api
 @catch_errors
 def api_register():
@@ -228,13 +242,14 @@ def api_register():
     password = json_data['password']
     return user_database.register(email, password)
 
-@app.route('/api/confirm_email/<token>', methods = ['GET'])
+
+@app.route('/api/confirm_email/<token>', methods=['GET'])
 @catch_errors
 def confirm_email(token):
     return user_database.confirm_email(token)
 
-@app.route('/api/admin/approve_user/<token>', methods = ['GET'])
+
+@app.route('/api/admin/approve_user/<token>', methods=['GET'])
 @catch_errors
 def approve_user(token):
     return user_database.process_admin_approval(token)
-
