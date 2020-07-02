@@ -1,3 +1,3 @@
 SERVER_HOSTNAME := localhost
-TRUSTED_CERTIFICATE := ./src/cert.crt
+TRUSTED_CERTIFICATE := ./bin/cert.crt
 CLIENT_NAME=client

@@ -4,6 +4,8 @@ YELLOW   = \033[0;33m
 GREEN    = \033[0;32m
 RED = \033[0;31m
 NO_COLOR    = \033[m
+BOLD_TEXT := $(shell tput bold)
+NORM_TEXT := $(shell tput sgr0)
 
 CCX=g++
 LIBS=-L/usr/lib -L/usr/lib/x86_64-linux-gnu -lssl -lcrypto -lboost_system -pthread
@@ -31,12 +33,15 @@ clean:
 	@rm -rf $(BIN)
 
 run: $(EXECUTABLE) | $(TRUSTED_CERTIFICATE)
+	@echo "$(RED)$(BOLD_TEXT)MAKE SURE YOU TRUST $(TRUSTED_CERTIFICATE) $(NORM_TEXT)$(NO_COLOR)"
 	@$(EXECUTABLE) $(SERVER_HOSTNAME) $(TRUSTED_CERTIFICATE)|| true
 
 run_debug: $(DEBUG_EXECUTABLE) | $(TRUSTED_CERTIFICATE)
+	@echo "$(RED)$(BOLD_TEXT)MAKE SURE YOU TRUST $(TRUSTED_CERTIFICATE) $(NORM_TEXT)$(NO_COLOR)"
 	@$(DEBUG_EXECUTABLE) $(SERVER_HOSTNAME) $(TRUSTED_CERTIFICATE)|| true
 
 $(TRUSTED_CERTIFICATE):
+	mkdir -p $(dir $(TRUSTED_CERTIFICATE))
 	openssl s_client -connect $(SERVER_HOSTNAME):443 -showcerts < /dev/null 2>/dev/null | openssl x509 -outform PEM > $(TRUSTED_CERTIFICATE)
 
 $(BOOST): 
