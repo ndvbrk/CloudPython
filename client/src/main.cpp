@@ -1,6 +1,7 @@
 #include "include/rest.h"
 #include "include/hex2text.h"
 #include "include/const.h"
+#include "include/password.h"
 #include <cstdlib>
 #include <exception>
 #include <iostream>
@@ -10,6 +11,7 @@ std::string get_input(std::string prompt) {
   std::string result;
   std::cout << prompt << ":";
   std::getline(std::cin, result);
+  std::cout << "\n";
   return result;
 }
 
@@ -31,7 +33,9 @@ rest_api::format attempt_register(const rest_api& node) {
 
   std::string email = get_input("Enter email");
   //std::string email = "ndvbrk@gmail.com";
+  enable_silent_input();
   std::string password = get_input("Enter password");
+  disable_silent_input();
   //std::string password = "password";
   registeration_request.put("email", email);
   registeration_request.put("password", password);
