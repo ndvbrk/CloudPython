@@ -7,11 +7,12 @@ from google.auth.transport.requests import Request
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
+
 class Gmail:
     def __init__(self):
         with open('gmail_token.pickle', 'rb') as token:
             creds = pickle.load(token)
-        
+
         # If possible to refresh, do it
         if creds.refresh_token:
             creds.refresh(Request())
@@ -29,6 +30,6 @@ class Gmail:
         b64_bytes = base64.urlsafe_b64encode(message.as_bytes())
         b64_string = b64_bytes.decode()
         message_raw = {'raw': b64_string}
-        
+
         message = (self.service.users().messages().send(userId='me', body=message_raw).execute())
         return message

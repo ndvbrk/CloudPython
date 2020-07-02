@@ -117,6 +117,7 @@ def run_code(code_as_string, timeout):
         c.pause()
         raise TimeoutError('Script timed out')
 
+
 if __name__ == '__main__':
     result = run_code(
         "print(5); import sys; print('fatal error', file=sys.stderr)", 10)

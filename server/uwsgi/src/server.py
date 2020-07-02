@@ -99,16 +99,16 @@ class User:
             self.email, 'Cloud Python: Account activated by administrator', '')
 
     def assert_execute(self, password, totp):
-        if pbkdf2_sha256.verify(password, self.password_hash) != True:
+        if pbkdf2_sha256.verify(password, self.password_hash) is not True:
             raise Unauthorised()
 
-        if True != self.email_verified:
+        if not self.email_verified:
             raise Unauthorised()
 
-        if True != self.verify_totp(totp):
+        if not self.verify_totp(totp):
             raise Unauthorised()
 
-        if True != self.approved:
+        if not self.approved:
             # Consider FORBIDDEN instead?
             raise Unauthorised()
 
