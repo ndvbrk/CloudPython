@@ -64,6 +64,7 @@ $(EXECUTABLE): $(OBJS)
 	@mkdir -p $(RELEASE_DIR)
 	@echo "$(GREEN)       LD$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
 	@$(CCX) $(OBJS) -I$(BOOST_DIR) $(LIBS) -o $@ 
+	@strip $(EXECUTABLE)
 
 $(DEBUG_EXECUTABLE): $(OBJ_DEBUG)
 	@mkdir -p $(DEBUG_DIR)
