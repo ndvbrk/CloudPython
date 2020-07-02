@@ -3,14 +3,18 @@ import pickle
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 class Gmail:
     def __init__(self):
-        with open('data/gmail_token.pickle', 'rb') as token:
+        with open('gmail_token.pickle', 'rb') as token:
             creds = pickle.load(token)
-    
+        
+        # If possible to refresh, do it
+        if creds.refresh_token:
+            creds.refresh(Request())
         self.service = build('gmail', 'v1', credentials=creds)
 
     def send(self, to, msg_subject, message_body):

@@ -5,7 +5,14 @@ CITY=Tel Aviv
 ORGANISATION=CloudPython
 UNIT=IT Department
 
+.PHONY: all image run stop
+
 all: image
+
+image: keys
+	sudo docker build -t $(DOCKER_IMAGE_TAG) .
+
+keys: privatekey.key certificate.crt
 
 privatekey.key certificate.crt: Makefile
 	openssl req -x509 \
@@ -16,12 +23,7 @@ privatekey.key certificate.crt: Makefile
 		-nodes \
 		-subj "/C=$(COUNTRY)/L=$(CITY)/O=$(ORGANISATION)/OU=$(UNIT)"
 
-keys: privatekey.key certificate.crt
-
-image: keys
-	sudo docker build -t $(DOCKER_IMAGE_TAG) .
-
-run:
+run: all
 	sudo docker network ls|grep nginx2uwsgi >/dev/null ||  sudo docker network create nginx2uwsgi
 	sudo docker run --rm -t	-d		\
 			-m 50M --memory-reservation 25M	\
