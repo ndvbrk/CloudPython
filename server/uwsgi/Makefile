@@ -5,7 +5,7 @@ DOCKER_IMAGE_TAG=flask-uwsgi
 
 all: image
 	
-run:
+run: image
 	sudo docker network ls|grep nginx2uwsgi >/dev/null ||  sudo docker network create nginx2uwsgi
 
 	sudo docker run --rm -t -d								\
@@ -30,5 +30,5 @@ token: credentials.json
 	sudo docker run -v $(PWD):$(PWD) -it python:latest /bin/bash -c "cd $(PWD) && pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib && python $(PWD)/make_token.py"
 	cp token.pickle ./src/gmail_token.pickle
 
-image:
+image: token
 	sudo docker build -t flask-uwsgi .
