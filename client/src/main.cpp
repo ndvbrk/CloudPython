@@ -48,7 +48,7 @@ rest_api::format attempt_register(const rest_api& node) {
   return registeration_request;
 }
 void run() {
-  rest_api node(SERVER_HOSTNAME);
+  rest_api node(SERVER_HOSTNAME, TRUSTED_CERTIFICATE);
   rest_api::format exec_request = attempt_register(node);
   
   while(true) {

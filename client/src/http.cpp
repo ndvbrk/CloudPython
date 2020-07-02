@@ -25,7 +25,6 @@
 #include <cstdlib>
 #include <exception>
 #include <string>
-#include "include/const.h"
 
 namespace beast = boost::beast; // from <boost/beast.hpp>
 namespace http = beast::http;   // from <boost/beast/http.hpp>
@@ -34,7 +33,8 @@ namespace ssl = net::ssl;       // from <boost/asio/ssl.hpp>
 using tcp = net::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 auto request(const http::request<http::string_body> &req,
-             const tcp::resolver::query &query) {
+             const tcp::resolver::query &query,
+             const std::string& trusted_certificate) {
   // The io_context is required for all I/O
   net::io_context ioc;
 
@@ -45,7 +45,7 @@ auto request(const http::request<http::string_body> &req,
   // load_root_certificates(ctx);
 
   // Verify the remote server's certificate
-  ctx.load_verify_file(TRUSTED_CERTIFICATE);
+  ctx.load_verify_file(trusted_certificate);
 
   //ctx.set_verify_mode(boost::asio::ssl::verify_none);
   ctx.set_verify_mode(ssl::verify_peer);
@@ -95,14 +95,14 @@ auto request(const http::request<http::string_body> &req,
   return res;
 }
 
-std::string http_get(const char *host, const char *port, const char *target, int version) {
+std::string http_get(const char *host, const char *port, const char *target, int version, const std::string& trusted_certificate) {
   tcp::resolver::query query(host, port);
   // Set up an HTTP GET request message
   http::request<http::string_body> req{http::verb::get, target, version};
   req.set(http::field::host, host);
   req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
-  auto response = request(req, query);
+  auto response = request(req, query, trusted_certificate);
   auto http_code = response.base().result();
   if (http::status::ok == response.base().result()) {
     return response.body();
@@ -113,7 +113,7 @@ std::string http_get(const char *host, const char *port, const char *target, int
 }
 
 std::tuple<http::status, std::string> http_post(const char *host, const char *port, const char *target,
-                 int version, std::string postdata, std::string content_type) {
+                 int version, const std::string& trusted_certificate, std::string postdata, std::string content_type) {
   tcp::resolver::query query(host, port);
   // Set up an HTTP GET request message
   http::request<http::string_body> req{http::verb::post, target, version};
@@ -123,7 +123,7 @@ std::tuple<http::status, std::string> http_post(const char *host, const char *po
   req.body() = postdata;
   req.prepare_payload();
 
-  auto response = request(req, query);
+  auto response = request(req, query, trusted_certificate);
   auto http_code = response.base().result();
   return std::make_tuple(http_code, response.body());
 }

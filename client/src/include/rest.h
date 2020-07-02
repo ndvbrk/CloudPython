@@ -7,7 +7,7 @@
 
 class rest_api {
 public:
-  rest_api(const char *host);
+  rest_api(const char *host, const std::string& trusted_certificate);
   using format = boost::property_tree::ptree; 
   using status = boost::beast::http::status;
   format get(const char *target) const;
@@ -21,5 +21,6 @@ private:
   const std::string host;
   const std::string service;
   const std::string json_content_type;
-  int httpversion;
+  const int httpversion;
+  const std::string& trusted_certificate;
 };
