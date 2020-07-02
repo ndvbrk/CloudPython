@@ -40,14 +40,13 @@ rest_api::format attempt_register(const rest_api &node) {
 
   if (yes_or_no("Need to register?")) {
     std::cout << "Making registration request\n";
-    node.post("/api/register", registration_request,
-              rest_api::status::created);
+    node.post("/api/register", registration_request, rest_api::status::created);
   }
 
   return registration_request;
 }
-void run() {
-  rest_api node(SERVER_HOSTNAME, TRUSTED_CERTIFICATE);
+void run(const char *hostname, std::string trusted_cert) {
+  rest_api node(hostname, trusted_cert);
   rest_api::format exec_request = attempt_register(node);
 
   while (true) {
@@ -75,8 +74,13 @@ void run() {
 }
 
 int main(int argc, char **argv) {
+  if (argc != 3) {
+    std::cerr << "Usage:\n";
+    std::cerr << "\t" << argv[0] << " SERVER_HOSTNAME TRUSTED_CERTIFICATE\n";
+    return EXIT_FAILURE;
+  }
   try {
-    run();
+    run(argv[1], argv[2]);
   } catch (std::exception const &e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;
