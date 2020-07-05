@@ -5,6 +5,7 @@ import types
 import os
 import time
 import random
+from errors import PayloadTooLarge
 user_and_group = '13467:13468'
 
 
@@ -45,9 +46,12 @@ class MyPythonContainer:
         tar_data = MyPythonContainer.make_tar(basename, data)
         self.container.put_archive(dirname, tar_data)
 
-    def download(self, target):
+    def download(self, target, max_size):
         dirname, basename = os.path.split(target)
         bits, stats = self.container.get_archive(target)
+
+        if stats['size'] > max_size:
+            raise PayloadTooLarge()
 
         file_like_object = io.BytesIO()
         for chunk in bits:
@@ -80,11 +84,17 @@ class MyPythonContainer:
 
     def exec_result(self):
         stdout = stderr = exit_code = None
+        max_size = 200
         try:
-            exit_code = self.download('/tmp/exit_code').hex()
-            stdout = self.download('/tmp/stdout').hex()
-            stderr = self.download('/tmp/stderr').hex()
+            # it is assumed the file with the exit code
+            # is created last, and thus its existence
+            # implies the existence of the other two
+            # which is why it is downloaded first
+            exit_code = self.download('/tmp/exit_code', max_size).hex()
+            stdout = self.download('/tmp/stdout', max_size).hex()
+            stderr = self.download('/tmp/stderr', max_size).hex()
         except docker.errors.NotFound:
+            # calling code can choose to try again
             return None
 
         return {

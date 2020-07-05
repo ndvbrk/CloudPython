@@ -29,6 +29,13 @@ class Created(ServiceError):
             'User account created. You will receive confirmation email.', HTTPStatus.CREATED)
 
 
+class PayloadTooLarge(ServiceError):
+
+    def __init__(self):
+        super().__init__(
+            'Requested payload is too large.',
+            HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+
 class UserKeyError(BadRequest):
     pass
 
