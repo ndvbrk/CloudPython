@@ -6,31 +6,28 @@
 #include <iostream>
 #include <string>
 
-rest_api::format attempt_register(const rest_api &node) {
-  rest_api::format registration_request;
+rest::format attempt_register(const rest &node) {
+  rest::format registration_request;
 
-  std::string email = get_input("Enter email");
-  std::string password = get_input_hidden("Enter password");
-  registration_request.put("email", email);
-  registration_request.put("password", password);
+  registration_request.put("email", get_input("Enter email"));
+  registration_request.put("password", get_input_hidden("Enter password"));
 
   if (yes_or_no("Need to register?")) {
     std::cout << "Making registration request\n";
-    node.post("/api/register", registration_request, rest_api::status::created);
+    node.post("/api/register", registration_request, rest::status::created);
   }
 
   return registration_request;
 }
 void run(const char *hostname, std::string trusted_cert) {
-  rest_api node(hostname, trusted_cert);
-  rest_api::format exec_request = attempt_register(node);
+  rest node(hostname, trusted_cert);
+  rest::format exec_request = attempt_register(node);
 
   while (true) {
     exec_request.put("totp", get_input("Enter TOTP secret"));
     exec_request.put("data", get_input("Enter code"));
     std::cout << "Making execution request\n";
-    auto response =
-        node.post("/api/execute", exec_request, rest_api::status::ok);
+    auto response = node.post("/api/execute", exec_request, rest::status::ok);
 
     std::string error_string = response.get<std::string>("error");
     if (error_string != std::string("ok")) {
