@@ -9,15 +9,13 @@ all: image
 run: image
 	sudo docker network ls|grep nginx2uwsgi >/dev/null ||  sudo docker network create nginx2uwsgi
 
-	sudo docker run --rm -t -d								\
-		--security-opt=no-new-privileges					\
-		--cap-drop=ALL										\
-		--network nginx2uwsgi 								\
+	sudo docker run --rm -t								\
 		--name $(DOCKER_IMAGE_TAG)							\
+		--network nginx2uwsgi 								\
+		--cap-drop=ALL										\
+		--security-opt=no-new-privileges					\
 		-v /var/run/docker.sock:/var/run/docker.sock 		\
 		$(DOCKER_IMAGE_TAG)
-
-	# -m 50M --memory-reservation 25M
 
 stop:
 	sudo docker kill $(DOCKER_IMAGE_TAG) > /dev/null || true

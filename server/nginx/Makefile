@@ -26,9 +26,8 @@ privatekey.key certificate.crt: Makefile
 run: all
 	sudo docker network ls|grep nginx2uwsgi >/dev/null ||  sudo docker network create nginx2uwsgi
 	sudo docker run --rm -t	-d		\
-			-m 50M --memory-reservation 25M	\
-			--network nginx2uwsgi			\
 			--name $(DOCKER_IMAGE_TAG)		\
+			--network nginx2uwsgi			\
 			--cap-drop=ALL					\
 			--security-opt=no-new-privileges\
 			-p 443:5000						\
