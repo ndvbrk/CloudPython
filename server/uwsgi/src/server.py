@@ -16,6 +16,8 @@ tokenizer = URLSafeTimedSerializer(SECRET_KEY)
 EMAIL_CONFIRMATION_SALT = 'email-confirmation-salt'
 ADMIN_APPROVAL_SALT = 'admin-user-approval'
 ADMINS_EMAIL = 'admin@cloudpython.invalid'
+EXECUTION_TIMEOUT_SECONDS = 10
+USER_OUT_MAX_SIZE = 300
 email_service = Gmail()
 
 app = Flask(__name__)
@@ -227,7 +229,7 @@ def api_execute():
     user_database.assert_execute(email, password, totp)
 
     try:
-        result = run_code(data, 10)
+        result = run_code(data, EXECUTION_TIMEOUT_SECONDS, USER_OUT_MAX_SIZE)
         return result
     except TimeoutError:
         return 'request timed out'

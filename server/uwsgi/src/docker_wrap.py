@@ -82,16 +82,17 @@ class MyPythonContainer:
             demux=True
         )
 
-    def exec_result(self):
+    def exec_result(self, max_size):
         stdout = stderr = exit_code = None
-        max_size = 200
         try:
             # it is assumed the file with the exit code
             # is created last, and thus its existence
             # implies the existence of the other two
             # which is why it is downloaded first
             exit_code = self.download('/tmp/exit_code', max_size).hex()
+            max_size -= len(exit_code)/2
             stdout = self.download('/tmp/stdout', max_size).hex()
+            max_size -= len(exit_code)/2
             stderr = self.download('/tmp/stderr', max_size).hex()
         except docker.errors.NotFound:
             # calling code can choose to try again
@@ -114,13 +115,13 @@ class MyPythonContainer:
         self.cleanup()
 
 
-def run_code(code_as_string, timeout):
+def run_code(code_as_string, timeout, max_size):
     with MyPythonContainer() as c:
         c.upload('/tmp/usercode.py', code_as_string)
         c.exec('python /tmp/usercode.py')
         for i in range(timeout):
             time.sleep(1)
-            result = c.exec_result()
+            result = c.exec_result(max_size)
             if result is not None:
                 return result
 
@@ -130,5 +131,5 @@ def run_code(code_as_string, timeout):
 
 if __name__ == '__main__':
     result = run_code(
-        "print(5); import sys; print('fatal error', file=sys.stderr)", 10)
+        "print(5); import sys; print('fatal error', file=sys.stderr)", 10, 200)
     print(result)
