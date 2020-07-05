@@ -1,10 +1,10 @@
 #include "include/rest.h"
 #include "include/http.h"
 
-rest::rest(const char *host, const std::string &trusted_certificate)
-    : host(host), service("https"),
+rest::rest(std::string host, std::string trusted_certificate)
+    : host(std::move(host)), service("https"),
       json_content_type("application/json; charset=UTF-8"), httpversion(11),
-      trusted_certificate(trusted_certificate) {}
+      trusted_certificate(std::move(trusted_certificate)) {}
 
 rest::format rest::to_json(std::string response) {
   rest::format pt;
