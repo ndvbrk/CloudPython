@@ -1,5 +1,12 @@
 include MakefileConfig.mk
 
+ifneq "$(filter %debug,$(MAKECMDGOALS))" ""
+BUILD=debug
+CXXFLAGS+=-g
+else
+BUILD=release
+endif
+
 YELLOW   = \033[0;33m 
 GREEN    = \033[0;32m
 RED = \033[0;31m
@@ -9,7 +16,7 @@ NORM_TEXT := $(shell tput sgr0)
 
 CCX=g++
 # Optimisation level
-CCXFLAGS=-O2
+CCXFLAGS+=-O2
 # Avoid temporary files, speeding up builds
 CCXFLAGS+=-pipe
 # Run-time buffer overflow detection
@@ -40,34 +47,36 @@ BOOST_DIR=./boost_1_72_0
 BOOST=$(BOOST_DIR)/README.md
 
 BIN=./bin
-RELEASE_DIR=$(BIN)/release
-DEBUG_DIR=$(BIN)/debug
-EXECUTABLE=$(RELEASE_DIR)/$(CLIENT_NAME)
-DEBUG_EXECUTABLE=$(DEBUG_DIR)/$(CLIENT_NAME)
-OBJ_DIR=$(RELEASE_DIR)/obj
-OBJ_DIR_DEBUG=$(DEBUG_DIR)/obj
+EXECUTABLE=$(BIN)/$(BUILD)/$(CLIENT_NAME)
+OBJ_DIR=$(BIN)/$(BUILD)/obj
 
 SRC_DIR=./src
 SOURCES=$(wildcard $(SRC_DIR)/*.cpp)
 HEADERS=$(wildcard $(SRC_DIR)/include/*.h)
 OBJS := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
-OBJ_DEBUG := $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR_DEBUG)/%.o, $(SOURCES))
-
+DEPS:= $(OBJS:.o=.d)
 ARGUMENTS := $(SERVER_HOSTNAME) $(TRUSTED_CERTIFICATE) $(SCRIPT_TO_RUN)
 
 all: $(EXECUTABLE)
-debug: $(DEBUG_EXECUTABLE)
+debug: $(EXECUTABLE)
 
 clean:
 	@rm -rf $(BIN)
+
+%.d: 
+	@mkdir -p $(dir $@)
+	@$(CCX) -MM -MT '$(@:.d=.o)' $(SRC_DIR)/$(basename $(notdir $@)).cpp > $@
+
+ifneq ($(MAKECMDGOALS),clean)
+-include $(DEPS)
+endif
+
+run_debug: run
 
 run: $(EXECUTABLE) | $(TRUSTED_CERTIFICATE)
 	@echo "$(RED)$(BOLD_TEXT)MAKE SURE YOU TRUST $(TRUSTED_CERTIFICATE) $(NORM_TEXT)$(NO_COLOR)"
 	@$(EXECUTABLE) $(ARGUMENTS) || true
 
-run_debug: $(DEBUG_EXECUTABLE) | $(TRUSTED_CERTIFICATE)
-	@echo "$(RED)$(BOLD_TEXT)MAKE SURE YOU TRUST $(TRUSTED_CERTIFICATE) $(NORM_TEXT)$(NO_COLOR)"
-	@$(DEBUG_EXECUTABLE) $(ARGUMENTS) || true
 
 $(TRUSTED_CERTIFICATE): MakefileConfig.mk
 	mkdir -p $(dir $(TRUSTED_CERTIFICATE))
@@ -79,26 +88,15 @@ $(BOOST):
 	@rm boost_1_72_0.tar.gz
 	@sudo apt -qqq install libboost-system-dev --yes
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) $(BOOST)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(BOOST)
 	@mkdir -p $(OBJ_DIR)
 	@echo "$(GREEN)       CC$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
 	@$(CCX) $(CCXFLAGS) -I$(BOOST_DIR)  -c $< -o $@
 
-$(OBJ_DIR_DEBUG)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) $(BOOST)
-	@mkdir -p $(OBJ_DIR_DEBUG)
-	@echo "$(GREEN)       CC$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
-	@$(CCX) $(CCXFLAGS) -g -I$(BOOST_DIR) -c $< -o $@
-
 $(EXECUTABLE): $(OBJS)
-	@mkdir -p $(RELEASE_DIR)
 	@echo "$(GREEN)       LD$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
 	@$(CCX) $(CCXFLAGS) $(OBJS) -I$(BOOST_DIR) $(LIBS) -o $@ 
 	@strip $(EXECUTABLE)
-
-$(DEBUG_EXECUTABLE): $(OBJ_DEBUG)
-	@mkdir -p $(DEBUG_DIR)
-	@echo "$(GREEN)       LD$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
-	@$(CCX) $(OBJ_DEBUG) -I$(BOOST_DIR) $(LIBS) -o $@ 
 
 format:
 	@clang-format -i $(SOURCES) $(HEADERS)
