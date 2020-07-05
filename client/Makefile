@@ -17,7 +17,7 @@ CCXFLAGS+=-D_FORTIFY_SOURCE=2
 # Run-time bounds checking for C++ strings and containers
 CCXFLAGS+=-D_GLIBCXX_ASSERTIONS
 # Full ASLR for executables
-CCXFLAGS+=-fpie -Wl,-pie
+#CCXFLAGS+=-fPIC -Wl,-pie
 # Stack smashing protector
 CCXFLAGS+=-fstack-protector-all
 # tells the compiler to use a canary to protect any function which
@@ -92,7 +92,7 @@ $(OBJ_DIR_DEBUG)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) $(BOOST)
 $(EXECUTABLE): $(OBJS)
 	@mkdir -p $(RELEASE_DIR)
 	@echo "$(GREEN)       LD$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
-	@$(CCX) $(OBJS) -I$(BOOST_DIR) $(LIBS) -o $@ 
+	@$(CCX) $(CCXFLAGS) $(OBJS) -I$(BOOST_DIR) $(LIBS) -o $@ 
 	@strip $(EXECUTABLE)
 
 $(DEBUG_EXECUTABLE): $(OBJ_DEBUG)
