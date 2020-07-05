@@ -1,39 +1,16 @@
 #include "include/hex2text.h"
-#include "include/password.h"
+#include "include/input.h"
 #include "include/rest.h"
 #include <cstdlib>
 #include <exception>
 #include <iostream>
 #include <string>
 
-std::string get_input(std::string prompt) {
-  std::string result;
-  std::cout << prompt << ":";
-  std::getline(std::cin, result);
-  std::cout << "\n";
-  return result;
-}
-
-bool yes_or_no(std::string prompt) {
-  std::string result;
-  std::cout << prompt;
-  std::getline(std::cin, result);
-  if (result == "y" || result == "Y") {
-    return true;
-  }
-  if (result == "n" || result == "N") {
-    return false;
-  }
-  throw std::runtime_error("bad user input");
-}
-
 rest_api::format attempt_register(const rest_api &node) {
   rest_api::format registration_request;
 
   std::string email = get_input("Enter email");
-  enable_silent_input();
-  std::string password = get_input("Enter password");
-  disable_silent_input();
+  std::string password = get_input_hidden("Enter password");
   registration_request.put("email", email);
   registration_request.put("password", password);
 
