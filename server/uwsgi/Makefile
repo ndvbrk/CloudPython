@@ -1,5 +1,6 @@
 
 DOCKER_IMAGE_TAG=flask-uwsgi
+THIS_DIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
 .PHONY: all image run stop
 
@@ -26,9 +27,9 @@ credentials.json:
 	@echo "https://developers.google.com/gmail/api/quickstart/go?authuser=2"
 	exit 1
 
-token: credentials.json
-	sudo docker run -v $(PWD):$(PWD) -it python:latest /bin/bash -c "cd $(PWD) && pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib && python $(PWD)/make_token.py"
-	cp token.pickle ./src/gmail_token.pickle
+./src/gmail_token.pickle: credentials.json
+	sudo docker run -v $(THIS_DIR):$(THIS_DIR) -it python:latest /bin/bash -c "cd $(THIS_DIR) && pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib && python ./make_token.py"
+	mv token.pickle ./src/gmail_token.pickle
 
-image: token
+image: ./src/gmail_token.pickle
 	sudo docker build -t flask-uwsgi .
