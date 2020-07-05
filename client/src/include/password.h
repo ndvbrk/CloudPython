@@ -1,5 +1,7 @@
 #pragma once
 
-void enable_silent_input();
-
-void disable_silent_input();
+class SilentTerminal final {
+  public:
+  SilentTerminal();
+  ~SilentTerminal();
+};
