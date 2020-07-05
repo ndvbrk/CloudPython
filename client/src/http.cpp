@@ -104,7 +104,6 @@ std::string http_get(const char *host, const char *port, const char *target,
   req.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
 
   auto response = request(req, query, trusted_certificate);
-  auto http_code = response.base().result();
   if (http::status::ok == response.base().result()) {
     return response.body();
   }
