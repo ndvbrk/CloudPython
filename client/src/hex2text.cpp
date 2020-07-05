@@ -1,6 +1,8 @@
 
 
 #include "include/hex2text.h"
+#include <iomanip>
+#include <sstream>
 #include <stdexcept>
 
 // File is based on https://stackoverflow.com/a/3790707
@@ -37,4 +39,14 @@ std::string hex2ascii(const std::string in) {
   }
   result.push_back('\0');
   return result;
+}
+
+std::string bytes2hex(const std::vector<uint8_t> &in) {
+  auto from = in.cbegin();
+  auto to = in.cend();
+  std::ostringstream oss;
+  for (; from != to; ++from)
+    oss << std::hex << std::setw(2) << std::setfill('0')
+        << static_cast<int>(*from);
+  return oss.str();
 }

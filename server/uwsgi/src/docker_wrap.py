@@ -30,16 +30,19 @@ class MyPythonContainer:
         self.container.pause()
 
     @staticmethod
-    def make_tar(name, string):
+    def make_tar(name, data):
         file_like_object = io.BytesIO()
         with tarfile.open(fileobj=file_like_object, mode='w') as tar:
-            b = string.encode()
-            t = tarfile.TarInfo(name)
-            t.size = len(b)
-            tar.addfile(t, io.BytesIO(b))
+            if type(data) == str:
+                byte_data = data.encode()
+            else:
+                byte_data = data
 
-        data = file_like_object.getvalue()
-        return data
+            t = tarfile.TarInfo(name)
+            t.size = len(byte_data)
+            tar.addfile(t, io.BytesIO(byte_data))
+
+        return file_like_object.getvalue()
 
     def upload(self, target, data):
         dirname, basename = os.path.split(target)
@@ -115,9 +118,9 @@ class MyPythonContainer:
         self.cleanup()
 
 
-def run_code(code_as_string, timeout, max_size):
+def run_code(code_as_bytes, timeout, max_size):
     with MyPythonContainer() as c:
-        c.upload('/tmp/usercode.py', code_as_string)
+        c.upload('/tmp/usercode.py', code_as_bytes)
         c.exec('python /tmp/usercode.py')
         for i in range(timeout):
             time.sleep(1)

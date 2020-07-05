@@ -1,8 +1,9 @@
 #include "include/cloud_python.h"
+#include "include/hex2text.h"
 #include "include/input.h"
 #include <iostream>
 
-void run(std::string hostname, std::string trusted_cert) {
+void run(std::string hostname, std::string trusted_cert, std::string script) {
   rest node(std::move(hostname), std::move(trusted_cert));
   CloudPython service(node);
   auto email = get_input("Enter email");
@@ -10,29 +11,32 @@ void run(std::string hostname, std::string trusted_cert) {
   std::cout << "Making registration request\n";
   auto user = service.login(email, password);
 
-  while (true) {
-    auto totp = get_input("Enter TOTP secret");
-    auto code = get_input("Enter code");
-    std::cout << "Making execution request\n";
-    auto result = service.execute(user, totp, code);
+  auto totp = get_input("Enter TOTP secret");
+  auto file_contents = read_file(script);
+  auto code = bytes2hex(file_contents);
+  std::cout << "Making execution request\n";
+  auto result = service.execute(user, totp, code);
 
-    std::cout << "\nresults:\n";
-    std::cout << "Exit code:" << result.exit_code << "\n";
-    std::cout << "stdout:" << result.stdout << "\n";
-    std::cout << "stderr:" << result.stderr << "\n";
-    std::cout << "=================================================\n";
-    std::cout << std::endl;
-  }
+  const std::string green("\033[1;32m");
+  const std::string red("\033[1;31m");
+  const std::string reset("\033[0m");
+  std::cout << "\nresults:\n";
+  std::cout << "Exit code:" << result.exit_code << "\n";
+  std::cout << "stdout:\n" << green << result.stdout << "\n" << reset;
+  std::cout << "stderr:\n" << red << result.stderr << "\n" << reset;
+  std::cout << "=================================================\n";
+  std::cout << std::endl;
 }
 
 int main(int argc, char **argv) {
-  if (argc != 3) {
+  if (argc != 4) {
     std::cerr << "Usage:\n";
-    std::cerr << "\t" << argv[0] << " SERVER_HOSTNAME TRUSTED_CERTIFICATE\n";
+    std::cerr << "\t" << argv[0]
+              << " SERVER_HOSTNAME TRUSTED_CERTIFICATE PYTHON_SCRIPT\n";
     return EXIT_FAILURE;
   }
   try {
-    run(argv[1], argv[2]);
+    run(argv[1], argv[2], argv[3]);
   } catch (std::exception const &e) {
     std::cerr << e.what() << std::endl;
     return EXIT_FAILURE;

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 /**
  * Gets string information from the CLI user.
@@ -32,3 +33,10 @@ std::string get_input_hidden(std::string prompt);
  * @throw std::runtime_error, on invalid answers.
  */
 bool yes_or_no(std::string prompt);
+
+/**
+ * @param [in] filename path to a file.
+ * 
+ * @return The file's contents, as a byte sequence
+ */
+std::vector<uint8_t> read_file(const std::string &filename);

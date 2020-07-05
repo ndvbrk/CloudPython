@@ -21,7 +21,7 @@ ExecutionResult CloudPython::execute(const RegisteredUser &user,
                                      std::string totp, std::string code) {
   auto data = user->data();
   data.put("totp", totp);
-  data.put("data", code);
+  data.put("code", code);
   auto response = node.post("/api/execute", data, rest::status::ok);
 
   ExecutionResult result;
