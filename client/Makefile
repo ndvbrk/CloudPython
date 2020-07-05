@@ -8,6 +8,33 @@ BOLD_TEXT := $(shell tput bold)
 NORM_TEXT := $(shell tput sgr0)
 
 CCX=g++
+# Optimisation level
+CCXFLAGS=-O2
+# Avoid temporary files, speeding up builds
+CCXFLAGS+=-pipe
+# Run-time buffer overflow detection
+CCXFLAGS+=-D_FORTIFY_SOURCE=2
+# Run-time bounds checking for C++ strings and containers
+CCXFLAGS+=-D_GLIBCXX_ASSERTIONS
+# Full ASLR for executables
+CCXFLAGS+=-fpie -Wl,-pie
+# Stack smashing protector
+CCXFLAGS+=-fstack-protector-all
+# tells the compiler to use a canary to protect any function which
+# declares a character array of 4 or more bytes on its stack, rather
+# than the default of 8 or more bytes. 
+CCXFLAGS+=--param ssp-buffer-size=4
+# warnings for any functions that aren't going to get protected.
+CCXFLAGS+=-Wstack-protector
+# Turn on all warnings to help ensure the underlying code is secure
+# and treat those warnings as errors
+CCXFLAGS+=-Wall -Wextra -Werror
+# Read-only segments after relocation
+# https://www.redhat.com/en/blog/hardening-elf-binaries-using-relocation-read-only-relro
+CCXFLAGS+=-Wl,-z,relro,-z,now
+# Non-executable stack
+CCXFLAGS+=-Wl,-z,noexecstack
+
 LIBS=-L/usr/lib -L/usr/lib/x86_64-linux-gnu -lssl -lcrypto -lboost_system -pthread
 BOOST_DIR=./boost_1_72_0
 BOOST=$(BOOST_DIR)/README.md
@@ -53,12 +80,12 @@ $(BOOST):
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) $(BOOST)
 	@mkdir -p $(OBJ_DIR)
 	@echo "$(GREEN)       CC$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
-	@$(CCX) -I$(BOOST_DIR)  -c $< -o $@
+	@$(CCX) $(CCXFLAGS) -I$(BOOST_DIR)  -c $< -o $@
 
 $(OBJ_DIR_DEBUG)/%.o: $(SRC_DIR)/%.cpp $(HEADERS) $(BOOST)
 	@mkdir -p $(OBJ_DIR_DEBUG)
 	@echo "$(GREEN)       CC$(NO_COLOR) $(YELLOW)$@$(NO_COLOR)"
-	@$(CCX) -g -I$(BOOST_DIR) -c $< -o $@
+	@$(CCX) $(CCXFLAGS) -g -I$(BOOST_DIR) -c $< -o $@
 
 $(EXECUTABLE): $(OBJS)
 	@mkdir -p $(RELEASE_DIR)

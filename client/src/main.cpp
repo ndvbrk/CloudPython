@@ -1,74 +1,26 @@
-#include "include/const.h"
-#include "include/hex2text.h"
-#include "include/password.h"
-#include "include/rest.h"
-#include <cstdlib>
-#include <exception>
+#include "include/cloud_python.h"
+#include "include/input.h"
 #include <iostream>
-#include <string>
 
-std::string get_input(std::string prompt) {
-  std::string result;
-  std::cout << prompt << ":";
-  std::getline(std::cin, result);
-  std::cout << "\n";
-  return result;
-}
-
-bool yes_or_no(std::string prompt) {
-  std::string result;
-  std::cout << prompt;
-  std::getline(std::cin, result);
-  if (result == "y" || result == "Y") {
-    return true;
-  }
-  if (result == "n" || result == "N") {
-    return false;
-  }
-  throw std::runtime_error("bad user input");
-}
-
-rest_api::format attempt_register(const rest_api &node) {
-  rest_api::format registration_request;
-
-  std::string email = get_input("Enter email");
-  enable_silent_input();
-  std::string password = get_input("Enter password");
-  disable_silent_input();
-  registration_request.put("email", email);
-  registration_request.put("password", password);
-
-  if (yes_or_no("Need to register?")) {
-    std::cout << "Making registration request\n";
-    node.post("/api/register", registration_request, rest_api::status::created);
-  }
-
-  return registration_request;
-}
-void run(const char *hostname, std::string trusted_cert) {
-  rest_api node(hostname, trusted_cert);
-  rest_api::format exec_request = attempt_register(node);
+void run(std::string hostname, std::string trusted_cert) {
+  rest node(std::move(hostname), std::move(trusted_cert));
+  CloudPython service(node);
+  auto email = get_input("Enter email");
+  auto password = get_input_hidden("Enter password");
+  std::cout << "Making registration request\n";
+  auto user = service.login(email, password);
 
   while (true) {
-    exec_request.put("totp", get_input("Enter TOTP secret"));
-    exec_request.put("data", get_input("Enter code"));
+    auto totp = get_input("Enter TOTP secret");
+    auto code = get_input("Enter code");
     std::cout << "Making execution request\n";
-    auto response =
-        node.post("/api/execute", exec_request, rest_api::status::ok);
+    auto result = service.execute(user, totp, code);
 
-    std::string error_string = response.get<std::string>("error");
-    if (error_string != std::string("ok")) {
-      throw std::runtime_error("Error:" + error_string);
-    }
     std::cout << "\nresults:\n";
-    std::cout << "Exit code:"
-              << hex2ascii(response.get<std::string>("exit_code"));
-    std::cout << "stdout:" << hex2ascii(response.get<std::string>("stdout"))
-              << "\n";
-    std::cout << "stderr:\n"
-              << hex2ascii(response.get<std::string>("stderr")) << "\n";
+    std::cout << "Exit code:" << result.exit_code << "\n";
+    std::cout << "stdout:" << result.stdout << "\n";
+    std::cout << "stderr:" << result.stderr << "\n";
     std::cout << "=================================================\n";
-
     std::cout << std::endl;
   }
 }

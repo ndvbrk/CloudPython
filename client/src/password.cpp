@@ -14,9 +14,8 @@ static void stdin_control(bool enable) {
   (void)tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }
 
-void enable_silent_input() { stdin_control(false); }
-
-void disable_silent_input() {
+SilentTerminal::SilentTerminal() { stdin_control(false); }
+SilentTerminal::~SilentTerminal() {
   stdin_control(true);
   std::cout << "\n";
 }
