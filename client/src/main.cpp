@@ -1,4 +1,3 @@
-#include "include/const.h"
 #include "include/hex2text.h"
 #include "include/password.h"
 #include "include/rest.h"
