@@ -1,5 +1,5 @@
 #include "include/rest.h"
-#include "include/http.h"
+#include "include/https.h"
 
 rest::rest(std::string host, std::string trusted_certificate)
     : host(std::move(host)), service("https"),
