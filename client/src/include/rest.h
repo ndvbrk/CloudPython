@@ -8,7 +8,7 @@
 /**
  * Generic class for talking to a generic REST service over https.
  */
-class rest {
+class rest final {
 public:
   using format = boost::property_tree::ptree;
   using status = boost::beast::http::status;

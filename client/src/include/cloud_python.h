@@ -34,7 +34,7 @@ struct ExecutionResult {
 /**
  * class for interfacing with the server backend
  */
-class CloudPython {
+class CloudPython final {
 public:
   /**
    * Constructor.
