@@ -36,7 +36,7 @@ bool yes_or_no(std::string prompt);
 
 /**
  * @param [in] filename path to a file.
- * 
+ *
  * @return The file's contents, as a byte sequence
  */
 std::vector<uint8_t> read_file(const std::string &filename);

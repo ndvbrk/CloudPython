@@ -16,7 +16,7 @@ std::string hex2ascii(const std::string in);
 
 /**
  * @param [in] in:  byte sequence
- * 
+ *
  * @return          hex dump of bytes,
  *                  represented by ASCII characters 0-9,A-F,
  *                  of even length,

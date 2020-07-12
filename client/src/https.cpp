@@ -32,9 +32,10 @@ namespace net = boost::asio;    // from <boost/asio.hpp>
 namespace ssl = net::ssl;       // from <boost/asio/ssl.hpp>
 using tcp = net::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
-http::response<http::string_body> request(const http::request<http::string_body> &req,
-             const tcp::resolver::query &query,
-             const std::string &trusted_certificate) {
+http::response<http::string_body>
+request(const http::request<http::string_body> &req,
+        const tcp::resolver::query &query,
+        const std::string &trusted_certificate) {
   // The io_context is required for all I/O
   net::io_context ioc;
 
@@ -96,7 +97,7 @@ http::response<http::string_body> request(const http::request<http::string_body>
 }
 
 std::string https_get(const char *host, const char *port, const char *target,
-                     int version, const std::string &trusted_certificate) {
+                      int version, const std::string &trusted_certificate) {
   tcp::resolver::query query(host, port);
   // Set up an HTTP GET request message
   http::request<http::string_body> req{http::verb::get, target, version};
@@ -114,8 +115,8 @@ std::string https_get(const char *host, const char *port, const char *target,
 
 std::tuple<http::status, std::string>
 https_post(const char *host, const char *port, const char *target, int version,
-          const std::string &trusted_certificate, std::string postdata,
-          std::string content_type) {
+           const std::string &trusted_certificate, std::string postdata,
+           std::string content_type) {
   tcp::resolver::query query(host, port);
   // Set up an HTTP GET request message
   http::request<http::string_body> req{http::verb::post, target, version};
