@@ -14,6 +14,17 @@ private:
 
 typedef std::unique_ptr<RegisteredUserData> RegisteredUser;
 
+/**
+ * This is the result of a successful execution:
+ * The client gets the stdout, stderr of his script,
+ * along with the exit code.
+ * The server does not verify the contents of the exit code file is a number,
+ * and send binary data, so the client should or would not make any special
+ * effort to not display it outright as it is.
+ *
+ * This struct is used as it is friendlier to the user
+ * than JSON or tuples.
+ */
 struct ExecutionResult {
   std::string stderr;
   std::string stdout;
@@ -25,7 +36,12 @@ struct ExecutionResult {
  */
 class CloudPython {
 public:
-  CloudPython(const rest &node);
+  /**
+   * Constructor.
+   * Wraps an existing REST service object,
+   * and applies the project's semantics over it (Application layer Protocol).
+   */
+  CloudPython(rest &&node);
 
   /**
    * Makes a registration request to the service.
@@ -66,5 +82,5 @@ public:
                           std::string code);
 
 private:
-  const rest &node;
+  const rest node;
 };

@@ -9,7 +9,7 @@ RegisteredUserData::RegisteredUserData(std::string email,
 
 rest::format RegisteredUserData::data() const { return m_data; }
 
-CloudPython::CloudPython(const rest &node) : node(node){};
+CloudPython::CloudPython(rest &&node) : node(std::move(node)){};
 
 RegisteredUser CloudPython::login(std::string username, std::string password) {
   auto user = std::make_unique<RegisteredUserData>(username, password);

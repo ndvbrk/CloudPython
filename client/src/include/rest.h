@@ -11,6 +11,9 @@ public:
   using status = boost::beast::http::status;
 
   rest(std::string host, std::string trusted_certificate);
+
+  rest(rest &&other);
+  
   format get(const char *target) const;
 
   format post(const char *target, const rest::format &pt,

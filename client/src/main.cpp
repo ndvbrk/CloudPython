@@ -4,8 +4,7 @@
 #include <iostream>
 
 void run(std::string hostname, std::string trusted_cert, std::string script) {
-  rest node(std::move(hostname), std::move(trusted_cert));
-  CloudPython service(node);
+  CloudPython service(rest(std::move(hostname), std::move(trusted_cert)));
   auto email = get_input("Enter email");
   auto password = get_input_hidden("Enter password");
   std::cout << "Making registration request\n";
