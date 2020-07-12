@@ -19,13 +19,13 @@ std::string rest::from_json(const rest::format &pt) {
   return ss.str();
 }
 rest::format rest::get(const char *target) const {
-  return to_json(http_get(host.c_str(), service.c_str(), target, httpversion,
+  return to_json(https_get(host.c_str(), service.c_str(), target, httpversion,
                           trusted_certificate));
 }
 
 rest::format rest::post(const char *target, const rest::format &pt,
                         rest::status expected) const {
-  auto response = http_post(host.c_str(), service.c_str(), target, httpversion,
+  auto response = https_post(host.c_str(), service.c_str(), target, httpversion,
                             trusted_certificate, std::move(from_json(pt)),
                             json_content_type);
 
