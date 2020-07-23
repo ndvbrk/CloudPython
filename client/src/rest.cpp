@@ -1,10 +1,16 @@
 #include "include/rest.h"
-#include "include/http.h"
+#include "include/https.h"
 
 rest::rest(std::string host, std::string trusted_certificate)
     : host(std::move(host)), service("https"),
       json_content_type("application/json; charset=UTF-8"), httpversion(11),
       trusted_certificate(std::move(trusted_certificate)) {}
+
+rest::rest(rest &&other)
+    : host(std::move(other.host)), service(std::move(other.service)),
+      json_content_type(std::move(other.json_content_type)),
+      httpversion(other.httpversion),
+      trusted_certificate(std::move(other.trusted_certificate)) {}
 
 rest::format rest::to_json(std::string response) {
   rest::format pt;
@@ -19,15 +25,15 @@ std::string rest::from_json(const rest::format &pt) {
   return ss.str();
 }
 rest::format rest::get(const char *target) const {
-  return to_json(http_get(host.c_str(), service.c_str(), target, httpversion,
-                          trusted_certificate));
+  return to_json(https_get(host.c_str(), service.c_str(), target, httpversion,
+                           trusted_certificate));
 }
 
 rest::format rest::post(const char *target, const rest::format &pt,
                         rest::status expected) const {
-  auto response = http_post(host.c_str(), service.c_str(), target, httpversion,
-                            trusted_certificate, std::move(from_json(pt)),
-                            json_content_type);
+  auto response = https_post(host.c_str(), service.c_str(), target, httpversion,
+                             trusted_certificate, std::move(from_json(pt)),
+                             json_content_type);
 
   auto code = std::get<0>(response);
   auto content = std::get<1>(response);

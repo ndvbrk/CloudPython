@@ -1,5 +1,6 @@
 #include "include/input.h"
 #include "include/password.h"
+#include <fstream>
 #include <iostream>
 
 std::string get_input(std::string prompt) {
@@ -26,4 +27,13 @@ bool yes_or_no(std::string prompt) {
     return false;
   }
   throw std::runtime_error("bad user input");
+}
+
+std::vector<uint8_t> read_file(const std::string &filename) {
+  // open the file:
+  std::ifstream file(filename, std::ios::binary);
+
+  // read the data:
+  return std::vector<uint8_t>((std::istreambuf_iterator<char>(file)),
+                              std::istreambuf_iterator<char>());
 }
