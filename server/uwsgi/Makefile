@@ -9,7 +9,7 @@ all: image
 run: image
 	sudo docker network ls|grep nginx2uwsgi >/dev/null ||  sudo docker network create nginx2uwsgi
 
-	sudo docker run --rm -t								\
+	sudo docker run --rm -t -d								\
 		--name $(DOCKER_IMAGE_TAG)							\
 		--network nginx2uwsgi 								\
 		--cap-drop=ALL										\
