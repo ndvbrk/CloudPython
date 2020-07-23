@@ -44,7 +44,8 @@ CCXFLAGS+=-Wl,-z,relro,-z,now
 # Non-executable stack
 CCXFLAGS+=-Wl,-z,noexecstack
 
-LIBS=-L/usr/lib -L/usr/lib/x86_64-linux-gnu -lssl -lcrypto -lboost_system -pthread
+
+LIBS=-L/usr/lib -L/usr/lib/x86_64-linux-gnu -l:libssl.a -l:libcrypto.a -l:libboost_system.a -pthread -ldl
 BOOST_DIR=./boost_1_72_0
 BOOST=$(BOOST_DIR)/README.md
 
