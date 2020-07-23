@@ -14,6 +14,8 @@ NO_COLOR    = \033[m
 BOLD_TEXT := $(shell tput bold)
 NORM_TEXT := $(shell tput sgr0)
 
+# Used https://github.com/slimm609/checksec.sh to verify end product
+
 CCX=g++
 # Optimisation level
 CCXFLAGS+=-O2
