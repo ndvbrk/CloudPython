@@ -13,3 +13,5 @@ qrcode==6.1
 Pillow==7.1.1
 # For running user code
 docker==4.2.0
+flask-wtf
+wtforms[email]
