@@ -37,7 +37,6 @@ std::string hex2ascii(const std::string in) {
     c = (c << 4) + hexval(*p);
     result.push_back(c);
   }
-  result.push_back('\0');
   return result;
 }
 
