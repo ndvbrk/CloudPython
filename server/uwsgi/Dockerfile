@@ -7,12 +7,14 @@ FROM python:latest
 RUN mkdir /Server
 WORKDIR /Server
 
+RUN mkdir src
+WORKDIR src
+COPY requirements.txt requirements.txt
+RUN python -m venv ./venv
+RUN /bin/bash -c "source venv/bin/activate && pip install -r requirements.txt"
+WORKDIR /Server
 COPY src src
 WORKDIR /Server/src
-RUN python -m venv ./venv
-COPY requirements.txt requirements.txt
-RUN /bin/bash -c "source venv/bin/activate && pip install -r requirements.txt"
-
 CMD [ "venv/bin/uwsgi", "uwsgi.ini"]
 
 
