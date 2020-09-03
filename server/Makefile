@@ -17,3 +17,7 @@ run: images
 stop:
 	make stop -C uwsgi/
 	make stop -C nginx/
+
+restart:
+	make stop
+	make run
