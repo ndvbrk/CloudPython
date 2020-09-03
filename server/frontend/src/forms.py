@@ -23,6 +23,7 @@ class SignupForm(FlaskForm):
         DataRequired()])
     password = PasswordField('Password', [
         DataRequired(message="Please enter a password."),
+        Length(min=4, message=('Password is too short')),
     ])
     confirmPassword = PasswordField('Repeat Password', [
             EqualTo('password', message='Passwords must match.')
