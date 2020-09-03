@@ -10,11 +10,13 @@ uwsgi_image:
 images: nginx_image uwsgi_image
 
 run: images
+	make run -C frontend/
 	make run -C uwsgi/
 	make run -C nginx/
 	sudo docker ps
 
 stop:
+	make stop -C frontend/
 	make stop -C uwsgi/
 	make stop -C nginx/
 

@@ -1,7 +1,7 @@
 import os
 import functools
 import secrets
-from flask import Flask, jsonify, request, url_for
+from flask import Flask, jsonify, request, url_for, render_template, redirect
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from passlib.hash import pbkdf2_sha256
 from gmail import Gmail
@@ -11,7 +11,6 @@ import pyotp
 import qrcode
 import base64
 import io
-from flask import Flask, url_for, render_template, redirect
 
 
 SECRET_KEY = secrets.token_hex(64)
