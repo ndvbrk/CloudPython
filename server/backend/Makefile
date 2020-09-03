@@ -1,5 +1,5 @@
 
-DOCKER_IMAGE_TAG=flask-uwsgi
+DOCKER_IMAGE_TAG=flask-backend
 THIS_DIR := $(dir $(abspath $(firstword $(MAKEFILE_LIST))))
 
 .PHONY: all image run stop

@@ -250,7 +250,6 @@ def api_register():
     password = json_data['password']
     return user_database.register(email, password)
 
-
 @app.route('/api/confirm_email/<token>', methods=['GET'])
 @catch_errors
 def confirm_email(token):

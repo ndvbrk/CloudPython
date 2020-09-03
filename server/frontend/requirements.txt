@@ -3,3 +3,4 @@ Flask==1.1.1
 uwsgi==2.0.18
 flask-wtf
 wtforms[email]
+requests

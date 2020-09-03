@@ -60,6 +60,6 @@ def catch_errors(f):
         except ServiceError as e:
             return e.msg, e.status
         except Exception:
-            traceback.print_exc()
-            return 'Server error', HTTPStatus.INTERNAL_SERVER_ERROR
+            traceback.format_exc()
+            return traceback.format_exc(), HTTPStatus.INTERNAL_SERVER_ERROR
     return inner
