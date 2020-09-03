@@ -12,7 +12,6 @@ import qrcode
 import base64
 import io
 from flask import Flask, url_for, render_template, redirect
-from forms import *
 
 
 SECRET_KEY = secrets.token_hex(64)
@@ -264,28 +263,3 @@ def confirm_email(token):
 def approve_user(token):
     return user_database.process_admin_approval(token)
 
-
-@app.route('/contact', methods=('GET', 'POST'))
-def contact():
-    form = ContactForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        name = form.name.data
-        body = form.body.data
-        return redirect(url_for('success'))
-    return render_template('contact.jinja2', form=form, template='form-template')
-
-@app.route('/success', methods=('GET',))
-def success():
-    return render_template('success.jinja2')
-
-@app.route('/signup', methods=('GET', 'POST'))
-def signup():
-    form = SignupForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        password = form.password.data
-        return redirect(url_for('success'))
-    return render_template('signup.jinja2',
-                           form=form,
-                           template='form-template')
