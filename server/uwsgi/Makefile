@@ -30,4 +30,4 @@ credentials.json:
 	mv token.pickle ./src/gmail_token.pickle
 
 image: ./src/gmail_token.pickle
-	sudo docker build -t flask-uwsgi .
+	sudo docker build -t $(DOCKER_IMAGE_TAG) .
