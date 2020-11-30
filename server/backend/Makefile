@@ -9,7 +9,7 @@ all: image
 run: image
 	sudo docker network ls|grep nginx2uwsgi >/dev/null ||  sudo docker network create nginx2uwsgi
 
-	sudo docker run --rm -t -d								\
+	sudo docker run  -t -d								\
 		--name $(DOCKER_IMAGE_TAG)							\
 		--network nginx2uwsgi 								\
 		--cap-drop=ALL										\
@@ -19,6 +19,7 @@ run: image
 
 stop:
 	sudo docker kill $(DOCKER_IMAGE_TAG) > /dev/null || true
+	sudo docker rm $(DOCKER_IMAGE_TAG)
 
 credentials.json:
 	@echo "credentials.json file must be downloaded:"
