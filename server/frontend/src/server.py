@@ -5,6 +5,9 @@ from forms import *
 import requests
 import json
 from http import HTTPStatus
+import qrcode
+import base64
+import io
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(32)
@@ -49,3 +52,26 @@ def signup():
     return render_template('signup.jinja2',
                            form=form,
                            template='form-template')
+
+@app.route('/confirm_email/<token>', methods=('GET',))
+def confirm_email(token):
+    # TODO: Ask permission before sending request
+    server ="http://mynginx:8000/api/confirm_email"
+    backend_response = requests.post(server, json = {'token': token})
+    if backend_response.status_code != HTTPStatus.OK:
+        return render_from_backend(backend_response)
+
+    totp_url = json.loads(backend_response.text)["error"]
+
+    # TODO: Display this madness with a proper layout
+    qrcode_image = qrcode.make(totp_url)
+    file_like_object = io.BytesIO()
+    qrcode_image.save(file_like_object, format="png")
+    image_bytes = file_like_object.getvalue()
+    encoded = base64.b64encode(image_bytes).decode('ascii')
+    image_html = f'<img src="data:image/png;base64,{encoded}"/>'
+
+    response = ['Here is a QR code you should load into a 2FA authentication App']
+    response += [image_html]
+    response += [f'<a href="{totp_url}">Or you may just click this provisioning URI</a>']
+    return '<br>'.join(response)

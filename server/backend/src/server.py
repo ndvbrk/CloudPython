@@ -8,9 +8,6 @@ from gmail import Gmail
 from docker_wrap import run_code
 from errors import *
 import pyotp
-import qrcode
-import base64
-import io
 
 
 SECRET_KEY = secrets.token_hex(64)
@@ -18,6 +15,7 @@ tokenizer = URLSafeTimedSerializer(SECRET_KEY)
 EMAIL_CONFIRMATION_SALT = 'email-confirmation-salt'
 ADMIN_APPROVAL_SALT = 'admin-user-approval'
 ADMINS_EMAIL = 'ndvbrk@gmail.com'
+DOMAIN='CloudPython.ml'
 EXECUTION_TIMEOUT_SECONDS = 10
 USER_OUT_MAX_SIZE = 4096 # Arbitrary limit
 email_service = Gmail()
@@ -57,7 +55,6 @@ def rest_api(f):
 
 
 class User:
-
     def __init__(self, email, password):
         self.email = email
         self.password_hash = pbkdf2_sha256.hash(password)
@@ -77,12 +74,13 @@ class User:
 
     def send_verification_email(self):
         token = tokenizer.dumps(self.email, salt=EMAIL_CONFIRMATION_SALT)
-        confirm_url = url_for('confirm_email', token=token, _external=True)
+        url = f'https://{DOMAIN}/confirm_email/'+token
+        
 
-        html_content = create_button(
-            confirm_url, 'Click Here to activate your account')
+        html_content = create_button(url, 'Click Here to activate your account')
         email_service.send(
             self.email, 'Activate your account with Cloud Python', html_content)
+        print(f"Email sent to {self.email}: {url}")
 
     def request_approval_from_admin(self):
         if self.await_approval:
@@ -167,18 +165,7 @@ class UserDB:
             response = ['Account is ready to use service']
 
         totp_url = user.totp.provisioning_uri('Cloud Python')
-        qrcode_image = qrcode.make(totp_url)
-        file_like_object = io.BytesIO()
-        qrcode_image.save(file_like_object, format="png")
-        image_bytes = file_like_object.getvalue()
-        encoded = base64.b64encode(image_bytes).decode('ascii')
-        image_html = f'<img src="data:image/png;base64,{encoded}"/>'
-
-        response += [
-            'Here is a QR code you should load into a 2FA authentication App']
-        response += [image_html]
-        response += [f'<a href="{totp_url}">Or you may just click this provisioning URI</a>']
-        return '<br>'.join(response)
+        return totp_url
 
     def process_admin_approval(self, token):
         ten_minutes = 60 * 10
@@ -250,9 +237,12 @@ def api_register():
     password = json_data['password']
     return user_database.register(email, password)
 
-@app.route('/api/confirm_email/<token>', methods=['GET'])
+@app.route('/api/confirm_email', methods=['POST'])
+@rest_api
 @catch_errors
-def confirm_email(token):
+def confirm_email():
+    json_data = DictWrapper(request.get_json(force=False))
+    token = json_data['token']
     return user_database.confirm_email(token)
 
 
