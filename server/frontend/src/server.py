@@ -32,7 +32,7 @@ def render_from_backend(response):
     status = HTTPStatus(response.status_code)
     return render_template('show_text.jinja2', 
                 title=status.name,
-                page_title=status.name,
+                page_title=status.name.replace('_', ' '),
                 page_text=json_response["error"]
     )
 
