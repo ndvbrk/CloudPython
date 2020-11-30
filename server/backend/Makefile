@@ -19,7 +19,7 @@ run: image
 
 stop:
 	sudo docker kill $(DOCKER_IMAGE_TAG) > /dev/null || true
-	sudo docker rm $(DOCKER_IMAGE_TAG)
+	sudo docker rm $(DOCKER_IMAGE_TAG) > /dev/null || true
 
 credentials.json:
 	@echo "credentials.json file must be downloaded:"
