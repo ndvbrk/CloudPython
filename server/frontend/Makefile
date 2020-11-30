@@ -22,3 +22,6 @@ stop:
 
 image:
 	sudo docker build -t $(DOCKER_IMAGE_TAG) .
+
+logs:
+	sudo docker logs -t $(DOCKER_IMAGE_TAG)

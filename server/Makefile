@@ -25,3 +25,6 @@ stop:
 restart:
 	make stop
 	make run
+
+logs:
+	bash -c "make -s -C frontend/ logs ; make -s -C backend/ logs; make -s -C nginx/ logs ;" | sort

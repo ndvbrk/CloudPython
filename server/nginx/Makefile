@@ -35,4 +35,8 @@ run: all
 
 stop:
 	sudo docker kill $(DOCKER_IMAGE_TAG) > /dev/null || true
-	sudo docker rm $(DOCKER_IMAGE_TAG)
+	sudo docker rm $(DOCKER_IMAGE_TAG) > /dev/null || true
+
+
+logs:
+	sudo docker logs -t $(DOCKER_IMAGE_TAG)

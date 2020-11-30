@@ -32,3 +32,6 @@ credentials.json:
 
 image: ./src/gmail_token.pickle
 	sudo docker build -t $(DOCKER_IMAGE_TAG) .
+
+logs:
+	sudo docker logs -t $(DOCKER_IMAGE_TAG)
