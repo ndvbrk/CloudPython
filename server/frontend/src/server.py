@@ -64,7 +64,6 @@ def confirm_email(token):
 
     totp_url = json.loads(backend_response.text)["error"]
 
-    # TODO: Display this madness with a proper layout
     qrcode_image = qrcode.make(totp_url)
     file_like_object = io.BytesIO()
     qrcode_image.save(file_like_object, format="png")
@@ -72,7 +71,14 @@ def confirm_email(token):
     encoded = base64.b64encode(image_bytes).decode('ascii')
     image_html = f'<img src="data:image/png;base64,{encoded}"/>'
 
-    response = ['Here is a QR code you should load into a 2FA authentication App']
-    response += [image_html]
-    response += [f'<a href="{totp_url}">Or you may just click this provisioning URI</a>']
-    return '<br>'.join(response)
+    page_body = ['<p> Here is a QR code you should load into a 2FA authentication App</p>']
+    page_body += [image_html]
+    page_body += [f'<a href="{totp_url}">Or you may just click this provisioning URI</a>']
+    page_body_merged = '\n<br>\n'.join(page_body)
+
+    title = 'Email Confirmed'
+    return render_template('qr.jinja2', 
+                title=title,
+                page_title=title,
+                page_body=page_body_merged
+    )
