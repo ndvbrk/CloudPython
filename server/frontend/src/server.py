@@ -33,9 +33,10 @@ def success():
 def render_from_backend(response):
     json_response = json.loads(response.text)
     status = HTTPStatus(response.status_code)
+    title = status.name.replace('_', ' ')
     return render_template('show_text.jinja2', 
-                title=status.name,
-                page_title=status.name.replace('_', ' '),
+                title=title,
+                page_title=title,
                 page_text=json_response["error"]
     )
 
