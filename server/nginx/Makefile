@@ -1,16 +1,7 @@
-DOCKER_IMAGE_TAG=mynginx
-
 COUNTRY=IL
 CITY=Tel Aviv
 ORGANISATION=CloudPython
 UNIT=IT Department
-
-.PHONY: all image run stop
-
-all: image
-
-image: keys
-	sudo docker build -t $(DOCKER_IMAGE_TAG) .
 
 keys: privatekey.key certificate.crt
 
@@ -22,21 +13,3 @@ privatekey.key certificate.crt: Makefile
 		-days 365 \
 		-nodes \
 		-subj "/C=$(COUNTRY)/L=$(CITY)/O=$(ORGANISATION)/OU=$(UNIT)"
-
-run: all
-	sudo docker network ls|grep nginx2uwsgi >/dev/null ||  sudo docker network create nginx2uwsgi
-	sudo docker run  -t	-d		\
-			--name $(DOCKER_IMAGE_TAG)		\
-			--network nginx2uwsgi			\
-			--cap-drop=ALL					\
-			--security-opt=no-new-privileges\
-			-p 443:5000						\
-			$(DOCKER_IMAGE_TAG)
-
-stop:
-	sudo docker kill $(DOCKER_IMAGE_TAG) > /dev/null || true
-	sudo docker rm $(DOCKER_IMAGE_TAG) > /dev/null || true
-
-
-logs:
-	sudo docker logs -t $(DOCKER_IMAGE_TAG)

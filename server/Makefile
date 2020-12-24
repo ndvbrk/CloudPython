@@ -1,30 +1,22 @@
+nginx_requirements:
+	+make -C nginx/ keys
+backend_requirements:
+	+make -C backend/ ./src/gmail_token.pickle
 
-all:
-	make images -j2
+requirements:
+	+make nginx_requirements -s
+	+make backend_requirements -s
 
-nginx_image:
-	+make -C nginx/
-backend_image:
-	+make -C backend/
-frontend_image:
-	+make -C frontend/
-
-images: nginx_image backend_image
-
-run: images
-	make run -C frontend/
-	make run -C backend/
-	make run -C nginx/
-	sudo docker ps
+run: requirements
+	docker-compose up -d --build
 
 stop:
-	make stop -C frontend/
-	make stop -C backend/
-	make stop -C nginx/
+	docker-compose kill
+	docker-compose down --volumes
 
 restart:
 	make stop
 	make run
 
 logs:
-	bash -c "make -s -C frontend/ logs ; make -s -C backend/ logs; make -s -C nginx/ logs ;" | sort
+	docker-compose logs

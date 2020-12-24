@@ -1,0 +1,43 @@
+version: "3.3"
+networks:
+ nginx2uwsgi:
+
+services:
+  flask-backend:
+    build: 
+      context: ./backend
+    networks: 
+     - nginx2uwsgi
+    cap_drop: 
+      - ALL
+    security_opt:
+      - no-new-privileges
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+  flask-frontend:
+    depends_on:
+      - flask-backend
+    build: 
+      context: ./frontend
+    networks: 
+     - nginx2uwsgi
+    cap_drop: 
+      - ALL
+    security_opt:
+      - no-new-privileges
+  mynginx:
+    depends_on:
+      - flask-backend
+      - flask-frontend
+    build: 
+      context: ./nginx
+    ports:
+     - "443:5000"
+    networks: 
+     - nginx2uwsgi
+    cap_drop: 
+      - ALL
+    security_opt:
+      - no-new-privileges
