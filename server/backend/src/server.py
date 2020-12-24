@@ -15,7 +15,6 @@ tokenizer = URLSafeTimedSerializer(SECRET_KEY)
 EMAIL_CONFIRMATION_SALT = 'email-confirmation-salt'
 ADMIN_APPROVAL_SALT = 'admin-user-approval'
 ADMINS_EMAIL = 'ndvbrk@gmail.com'
-DOMAIN='CloudPython.ml'
 EXECUTION_TIMEOUT_SECONDS = 10
 USER_OUT_MAX_SIZE = 4096 # Arbitrary limit
 email_service = Gmail()
@@ -74,7 +73,7 @@ class User:
 
     def send_verification_email(self):
         token = tokenizer.dumps(self.email, salt=EMAIL_CONFIRMATION_SALT)
-        url = f'https://{DOMAIN}/confirm_email/'+token
+        url = f'https://{request.host}/confirm_email/'+token
         
 
         html_content = create_button(url, 'Click Here to activate your account')

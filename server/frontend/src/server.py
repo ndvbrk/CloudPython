@@ -48,7 +48,8 @@ def signup():
         password = form.password.data
         server ="http://mynginx:8000/api/register"
         response = requests.post(server, 
-        json ={'email': email, 'password': password})
+                                 json={'email': email, 'password': password},
+                                 headers={'Host': request.host})
         return render_from_backend(response)            
     return render_template('signup.jinja2',
                            form=form,
@@ -57,8 +58,9 @@ def signup():
 @app.route('/confirm_email/<token>', methods=('GET',))
 def confirm_email(token):
     # TODO: Ask permission before sending request
-    server ="http://mynginx:8000/api/confirm_email"
-    backend_response = requests.post(server, json = {'token': token})
+    server = "http://mynginx:8000/api/confirm_email"
+    backend_response = requests.post(
+        server, json={'token': token}, headers={'Host': request.host})
     if backend_response.status_code != HTTPStatus.OK:
         return render_from_backend(backend_response)
 
