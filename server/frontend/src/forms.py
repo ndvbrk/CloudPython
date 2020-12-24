@@ -2,6 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, TextField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 
+
 class ContactForm(FlaskForm):
     """Contact form."""
     name = StringField('Name', [
@@ -15,6 +16,7 @@ class ContactForm(FlaskForm):
     #recaptcha = RecaptchaField()
     submit = SubmitField('Submit')
 
+
 class SignupForm(FlaskForm):
     """Sign up for a user account."""
 
@@ -26,7 +28,7 @@ class SignupForm(FlaskForm):
         Length(min=4, message=('Password is too short')),
     ])
     confirmPassword = PasswordField('Repeat Password', [
-            EqualTo('password', message='Passwords must match.')
-            ])
+        EqualTo('password', message='Passwords must match.')
+    ])
     # recaptcha = RecaptchaField()
     submit = SubmitField('Submit')

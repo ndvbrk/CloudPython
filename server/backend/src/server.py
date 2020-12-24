@@ -1,14 +1,15 @@
-import os
 import functools
+import os
 import secrets
-from flask import Flask, jsonify, request, url_for, render_template, redirect
-from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+
+import pyotp
+from flask import Flask, jsonify, redirect, render_template, request, url_for
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from passlib.hash import pbkdf2_sha256
-from gmail import Gmail
+
 from docker_wrap import run_code
 from errors import *
-import pyotp
-
+from gmail import Gmail
 
 SECRET_KEY = secrets.token_hex(64)
 tokenizer = URLSafeTimedSerializer(SECRET_KEY)

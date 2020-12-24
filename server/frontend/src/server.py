@@ -1,13 +1,14 @@
-from os import urandom
-from flask import Flask, jsonify, request, url_for
-from flask import Flask, url_for, render_template, redirect
-from forms import *
-import requests
-import json
-from http import HTTPStatus
-import qrcode
 import base64
 import io
+import json
+from http import HTTPStatus
+from os import urandom
+
+import qrcode
+import requests
+from flask import Flask, jsonify, redirect, render_template, request, url_for
+
+import forms
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(32)
@@ -15,7 +16,7 @@ app.config['SECRET_KEY'] = urandom(32)
 
 @app.route('/contact', methods=('GET', 'POST'))
 def contact():
-    form = ContactForm()
+    form = forms.ContactForm()
     if form.validate_on_submit():
         email = form.email.data
         name = form.name.data
@@ -45,7 +46,7 @@ def render_from_backend(response):
 
 @app.route('/signup', methods=('GET', 'POST'))
 def signup():
-    form = SignupForm()
+    form = forms.SignupForm()
     if form.validate_on_submit():
         email = form.email.data
         password = form.password.data
