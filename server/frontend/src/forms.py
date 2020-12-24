@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextField, SubmitField, PasswordField
+from wtforms import StringField, TextField, SubmitField, PasswordField, HiddenField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 
 
@@ -31,4 +31,10 @@ class SignupForm(FlaskForm):
         EqualTo('password', message='Passwords must match.')
     ])
     # recaptcha = RecaptchaField()
+    submit = SubmitField('Submit')
+
+
+class ConfirmEmail(FlaskForm):
+    """Email Confirmation form."""
+    token = HiddenField('token')
     submit = SubmitField('Submit')

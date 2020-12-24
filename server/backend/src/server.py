@@ -143,17 +143,20 @@ class UserDB:
 
         raise Created()
 
-    def confirm_email(self, token):
-        """
-        Runs in response to a user registering for the first time
-        """
+    def translate_email_token(self, token):
         ten_minutes = 60 * 10
         try:
             email = tokenizer.loads(
                 token, max_age=ten_minutes, salt=EMAIL_CONFIRMATION_SALT)
         except (SignatureExpired, BadSignature) as e:
             raise BadRequest()
+        return email
 
+    def confirm_email(self, token):
+        """
+        Runs in response to a user registering for the first time
+        """
+        email = self.translate_email_token(token)
         user = self.get_user(email)
         user.request_approval_from_admin()
 
@@ -246,6 +249,16 @@ def confirm_email():
     json_data = DictWrapper(request.get_json(force=False))
     token = json_data['token']
     return user_database.confirm_email(token)
+
+
+@app.route('/api/before_confirm_email', methods=['POST'])
+@rest_api
+@catch_errors
+def before_confirm_email():
+    json_data = DictWrapper(request.get_json(force=False))
+    token = json_data['token']
+    email = user_database.translate_email_token(token)
+    return email
 
 
 @app.route('/api/admin/approve_user/<token>', methods=['GET'])

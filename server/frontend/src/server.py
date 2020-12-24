@@ -60,17 +60,7 @@ def signup():
                            template='form-template')
 
 
-@app.route('/confirm_email/<token>', methods=('GET',))
-def confirm_email(token):
-    # TODO: Ask permission before sending request
-    server = "http://mynginx:8000/api/confirm_email"
-    backend_response = requests.post(
-        server, json={'token': token}, headers={'Host': request.host})
-    if backend_response.status_code != HTTPStatus.OK:
-        return render_from_backend(backend_response)
-
-    totp_url = json.loads(backend_response.text)["error"]
-
+def render_totp_url(totp_url):
     qrcode_image = qrcode.make(totp_url)
     file_like_object = io.BytesIO()
     qrcode_image.save(file_like_object, format="png")
@@ -90,3 +80,34 @@ def confirm_email(token):
                            page_title=title,
                            page_body=page_body_merged
                            )
+
+
+@app.route('/confirm_email/<token>', methods=('GET',))
+def confirm_email(token):
+    form = forms.ConfirmEmail()
+    server = "http://mynginx:8000/api/before_confirm_email"
+    backend_response = requests.post(
+        server, json={'token': token}, headers={'Host': request.host})
+    if backend_response.status_code != HTTPStatus.OK:
+        return render_from_backend(backend_response)
+    email = json.loads(backend_response.text)["error"]
+    form.token.data = token
+    return render_template('confirm_email.jinja2',
+                           form=form,
+                           email=email,
+                           template='form-template')
+
+
+@app.route('/confirm_email_submit', methods=('POST',))
+def confirm_email_submit():
+    form = forms.ConfirmEmail()
+    if form.validate_on_submit():
+        token = form.token.data
+        server = "http://mynginx:8000/api/confirm_email"
+        backend_response = requests.post(
+            server, json={'token': token}, headers={'Host': request.host})
+        if backend_response.status_code != HTTPStatus.OK:
+            return render_from_backend(backend_response)
+
+        totp_url = json.loads(backend_response.text)["error"]
+        return render_totp_url(totp_url)
