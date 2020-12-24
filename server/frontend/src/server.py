@@ -111,3 +111,30 @@ def confirm_email_submit():
 
         totp_url = json.loads(backend_response.text)["error"]
         return render_totp_url(totp_url)
+
+
+@app.route('/admin/approve_user/<token>', methods=('GET',))
+def approve_user(token):
+    form = forms.ConfirmEmail()
+    server = "http://mynginx:8000/api/admin/before_approve_user"
+    backend_response = requests.post(
+        server, json={'token': token}, headers={'Host': request.host})
+    if backend_response.status_code != HTTPStatus.OK:
+        return render_from_backend(backend_response)
+    email = json.loads(backend_response.text)["error"]
+    form.token.data = token
+    return render_template('approve_user.jinja2',
+                           form=form,
+                           email=email,
+                           template='form-template')
+
+
+@app.route('/admin/approve_user_submit', methods=('POST',))
+def approve_user_submit():
+    form = forms.ConfirmEmail()
+    if form.validate_on_submit():
+        token = form.token.data
+        server = "http://mynginx:8000/api/admin/approve_user"
+        backend_response = requests.post(
+            server, json={'token': token}, headers={'Host': request.host})
+        return render_from_backend(backend_response)

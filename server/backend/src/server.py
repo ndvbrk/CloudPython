@@ -86,7 +86,8 @@ class User:
         if self.await_approval:
             return
         token = tokenizer.dumps(self.email, salt=ADMIN_APPROVAL_SALT)
-        approve_url = url_for('approve_user', token=token, _external=True)
+        # Note this link will point the user to the frontend service
+        approve_url = f'https://{request.host}/admin/approve_user/{token}'
 
         html_content = f'The user {self.email} has requested to use your platform.'
         html_content += '<br>'
@@ -171,14 +172,17 @@ class UserDB:
         totp_url = user.totp.provisioning_uri('Cloud Python')
         return totp_url
 
-    def process_admin_approval(self, token):
+    def translate_admin_token(self, token):
         ten_minutes = 60 * 10
         try:
             email = tokenizer.loads(
                 token, max_age=ten_minutes, salt=ADMIN_APPROVAL_SALT)
         except (SignatureExpired, BadSignature) as e:
             raise BadRequest()
+        return email
 
+    def process_admin_approval(self, token):
+        email = self.translate_admin_token(token)
         if email not in self.all_users:
             # Dead code, in theory.
             # If he didnt register, how come it is approved?
@@ -261,7 +265,20 @@ def before_confirm_email():
     return email
 
 
-@app.route('/api/admin/approve_user/<token>', methods=['GET'])
+@app.route('/api/admin/approve_user', methods=['POST'])
+@rest_api
 @catch_errors
-def approve_user(token):
+def approve_user():
+    json_data = DictWrapper(request.get_json(force=False))
+    token = json_data['token']
     return user_database.process_admin_approval(token)
+
+
+@app.route('/api/admin/before_approve_user', methods=['POST'])
+@rest_api
+@catch_errors
+def before_approve_user():
+    json_data = DictWrapper(request.get_json(force=False))
+    token = json_data['token']
+    email = user_database.translate_admin_token(token)
+    return email
