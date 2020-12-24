@@ -16,7 +16,7 @@ EMAIL_CONFIRMATION_SALT = 'email-confirmation-salt'
 ADMIN_APPROVAL_SALT = 'admin-user-approval'
 ADMINS_EMAIL = 'ndvbrk@gmail.com'
 EXECUTION_TIMEOUT_SECONDS = 10
-USER_OUT_MAX_SIZE = 4096 # Arbitrary limit
+USER_OUT_MAX_SIZE = 4096  # Arbitrary limit
 email_service = Gmail()
 
 app = Flask(__name__)
@@ -74,9 +74,9 @@ class User:
     def send_verification_email(self):
         token = tokenizer.dumps(self.email, salt=EMAIL_CONFIRMATION_SALT)
         url = f'https://{request.host}/confirm_email/'+token
-        
 
-        html_content = create_button(url, 'Click Here to activate your account')
+        html_content = create_button(
+            url, 'Click Here to activate your account')
         email_service.send(
             self.email, 'Activate your account with Cloud Python', html_content)
         print(f"Email sent to {self.email}: {url}")
@@ -92,7 +92,8 @@ class User:
         html_content += create_button(
             approve_url, 'Clicking here will activate his account')
 
-        email_service.send(ADMINS_EMAIL, f'Cloud Python service access request: {self.email}', html_content)
+        email_service.send(
+            ADMINS_EMAIL, f'Cloud Python service access request: {self.email}', html_content)
 
         self.await_approval = True
 
@@ -217,7 +218,7 @@ def api_execute():
         code = bytes.fromhex(json_data['code'])
     except ValueError:
         raise BadRequest()
-    
+
     user_database.assert_execute(email, password, totp)
 
     try:
@@ -236,6 +237,7 @@ def api_register():
     password = json_data['password']
     return user_database.register(email, password)
 
+
 @app.route('/api/confirm_email', methods=['POST'])
 @rest_api
 @catch_errors
@@ -249,4 +251,3 @@ def confirm_email():
 @catch_errors
 def approve_user(token):
     return user_database.process_admin_approval(token)
-
