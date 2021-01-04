@@ -14,16 +14,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(32)
 
 
-@app.route('/contact', methods=('GET', 'POST'))
-def contact():
-    form = forms.ContactForm()
-    if form.validate_on_submit():
-        email = form.email.data
-        name = form.name.data
-        body = form.body.data
-        return redirect(url_for('success'))
-    return render_template('contact.jinja2', form=form, template='form-template')
-
 
 @app.route('/success', methods=('GET',))
 def success():
