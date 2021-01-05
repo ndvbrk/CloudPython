@@ -1,8 +1,5 @@
-{% extends 'layout.jinja2' %}
-
-{% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}" rel="stylesheet" type="text/css">
-{% endblock %}
+{% extends 'index.html' %}
+{% from 'bootstrap/form.html' import render_field %}
 
 {% block content %}
 <div class="formwrapper">
@@ -20,7 +17,7 @@
         {% endif %}
       </div>
       {{ form.csrf_token }}
-      {{ form.submit }}
+      {{ render_field(form.submit) }}
   </form>
 </div>
 {% endblock %}

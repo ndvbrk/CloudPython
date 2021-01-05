@@ -7,20 +7,19 @@ from os import urandom
 import qrcode
 import requests
 from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask_bootstrap import Bootstrap
 
 import forms
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(32)
 
+bootstrap = Bootstrap(app)
 
 
-@app.route('/success', methods=('GET',))
-def success():
-    return render_template('show_text.jinja2',
-                           title='Success',
-                           page_title='Success!',
-                           page_text='You\'ve submitted a valid form!')
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 
 def render_from_backend(response):
@@ -30,7 +29,7 @@ def render_from_backend(response):
     return render_template('show_text.jinja2',
                            title=title,
                            page_title=title,
-                           page_text=json_response["error"]
+                           page_body=f'<p>{json_response["error"]}</p>'
                            )
 
 
@@ -65,7 +64,7 @@ def render_totp_url(totp_url):
     page_body_merged = '\n<br>\n'.join(page_body)
 
     title = 'Email Confirmed'
-    return render_template('qr.jinja2',
+    return render_template('show_text.jinja2',
                            title=title,
                            page_title=title,
                            page_body=page_body_merged
