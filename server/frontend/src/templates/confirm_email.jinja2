@@ -6,7 +6,7 @@
   <h2 class="title">Confirm Email</h2>
   <p>Submit this form to confirm registration for:</p>
   <p>{{email}}</p>
-  <form method="POST" action="/confirm_email_submit">
+  <form method="POST" action="/confirm_email">
       <div class="form-field">{{ form.token }}
         {% if form.token.errors %}
           <ul class="errors">

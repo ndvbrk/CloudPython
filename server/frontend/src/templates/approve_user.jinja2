@@ -7,7 +7,7 @@
   <h2 class="title">Approve Registered User</h2>
   <p>Submit this form to approve the registration of:</p>
   <p>{{email}}</p>
-  <form method="POST" action="/admin/approve_user_submit">
+  <form method="POST" action="/admin/approve_user">
       <div class="form-field">{{ form.token }}
         {% if form.token.errors %}
           <ul class="errors">

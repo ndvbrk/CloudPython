@@ -71,28 +71,13 @@ def render_totp_url(totp_url):
                            )
 
 
+@app.route('/confirm_email', methods=('POST',), defaults={'token': None})
 @app.route('/confirm_email/<token>', methods=('GET',))
-def confirm_email(token):
-    form = forms.ConfirmEmail()
-    server = "http://mynginx:8000/api/before_confirm_email"
-    backend_response = requests.post(
-        server, json={'token': token}, headers={'Host': request.host})
-    if backend_response.status_code != HTTPStatus.OK:
-        return render_from_backend(backend_response)
-    email = json.loads(backend_response.text)["error"]
-    form.token.data = token
-    return render_template('confirm_email.jinja2',
-                           form=form,
-                           email=email,
-                           template='form-template')
-
-
-@app.route('/confirm_email_submit', methods=('POST',))
-def confirm_email_submit():
+def confirm_email_submit(token):
     form = forms.ConfirmEmail()
     if form.validate_on_submit():
-        token = form.token.data
         server = "http://mynginx:8000/api/confirm_email"
+        token = form.token.data
         backend_response = requests.post(
             server, json={'token': token}, headers={'Host': request.host})
         if backend_response.status_code != HTTPStatus.OK:
@@ -100,26 +85,29 @@ def confirm_email_submit():
 
         totp_url = json.loads(backend_response.text)["error"]
         return render_totp_url(totp_url)
+    else:
+        if token is None:
+            return render_template('show_text.jinja2',
+                                   title='404',
+                                   page_title='Page not found',
+                                   page_body='Bye bye'
+                                   )
+        server = "http://mynginx:8000/api/before_confirm_email"
+        backend_response = requests.post(
+            server, json={'token': token}, headers={'Host': request.host})
+        if backend_response.status_code != HTTPStatus.OK:
+            return render_from_backend(backend_response)
+        email = json.loads(backend_response.text)["error"]
+        form.token.data = token
+        return render_template('confirm_email.jinja2',
+                               form=form,
+                               email=email,
+                               template='form-template')
 
 
-@app.route('/admin/approve_user/<token>', methods=('GET',))
-def approve_user(token):
-    form = forms.ConfirmEmail()
-    server = "http://mynginx:8000/api/admin/before_approve_user"
-    backend_response = requests.post(
-        server, json={'token': token}, headers={'Host': request.host})
-    if backend_response.status_code != HTTPStatus.OK:
-        return render_from_backend(backend_response)
-    email = json.loads(backend_response.text)["error"]
-    form.token.data = token
-    return render_template('approve_user.jinja2',
-                           form=form,
-                           email=email,
-                           template='form-template')
-
-
-@app.route('/admin/approve_user_submit', methods=('POST',))
-def approve_user_submit():
+@ app.route('/admin/approve_user/<token>', methods=('GET',))
+@ app.route('/admin/approve_user', methods=('POST',), defaults={'token': None})
+def approve_user_submit(token):
     form = forms.ConfirmEmail()
     if form.validate_on_submit():
         token = form.token.data
@@ -127,3 +115,21 @@ def approve_user_submit():
         backend_response = requests.post(
             server, json={'token': token}, headers={'Host': request.host})
         return render_from_backend(backend_response)
+    else:
+        if token is None:
+            return render_template('show_text.jinja2',
+                                   title='404',
+                                   page_title='Page not found',
+                                   page_body='Bye bye'
+                                   )
+        server = "http://mynginx:8000/api/admin/before_approve_user"
+        backend_response = requests.post(
+            server, json={'token': token}, headers={'Host': request.host})
+        if backend_response.status_code != HTTPStatus.OK:
+            return render_from_backend(backend_response)
+        email = json.loads(backend_response.text)["error"]
+        form.token.data = token
+        return render_template('approve_user.jinja2',
+                               form=form,
+                               email=email,
+                               template='form-template')
