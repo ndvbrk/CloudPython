@@ -14,7 +14,7 @@ CloudPython::CloudPython(rest &&node) : node(std::move(node)){};
 RegisteredUser CloudPython::login(std::string username, std::string password) {
   auto user = std::make_unique<RegisteredUserData>(username, password);
   node.post("/api/register", user->data(), rest::status::created);
-  return std::move(user);
+  return user;
 }
 
 ExecutionResult CloudPython::execute(const RegisteredUser &user,
@@ -34,5 +34,5 @@ ExecutionResult CloudPython::execute(const RegisteredUser &user,
   result.stdout = hex2ascii(response.get<std::string>("stdout"));
   result.stderr = hex2ascii(response.get<std::string>("stderr"));
 
-  return std::move(result);
+  return result;
 }
