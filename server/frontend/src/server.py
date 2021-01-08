@@ -15,6 +15,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = urandom(32)
 
 bootstrap = Bootstrap(app)
+app.register_error_handler(404, lambda e: (render_template('404.jinja2'), 404))
 
 
 @app.route('/')
