@@ -1,0 +1,47 @@
+{% extends 'index.html' %}
+{% from 'bootstrap/form.html' import render_field %}
+
+{% block title %}Execute{% endblock %}
+
+{% block content %}
+<div class="formwrapper">
+  <h2 class="title">Execute</h2>
+  <form method="POST" action="/execute">
+      {{ form.csrf_token }}
+      {{ render_field(form.code) }}
+      {{ render_field(form.submit) }}
+  </form>
+</div>
+
+
+<div class="table-responsive">
+  <table class="table table-bordered">
+    <thead class="thead-light">
+      <tr>
+    {% if exit_code is defined %}
+        <th scope="col">Exit Code</th>
+    {% endif %}
+    {% if stdout is defined %}
+        <th scope="col">Standard Output</th>
+    {% endif %}
+    {% if stderr is defined %}
+        <th scope="col">Standard Error</th>
+    {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+    {% if exit_code is defined %}
+        <th scope="row">{{exit_code}}</th>
+    {% endif %}
+    {% if stdout is defined %}
+        <td>{{stdout}}</td>
+    {% endif %}
+    {% if stderr is defined %}
+        <td>{{stderr}}</td>
+    {% endif %}
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endblock %}

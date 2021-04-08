@@ -6,7 +6,7 @@ from os import urandom
 
 import qrcode
 import requests
-from flask import Flask, jsonify, redirect, render_template, request, url_for
+from flask import Flask, jsonify, redirect, render_template, request, url_for, make_response
 from flask_bootstrap import Bootstrap
 
 import forms
@@ -46,6 +46,63 @@ def signup():
                                  headers={'Host': request.host})
         return render_from_backend(response)
     return render_template('signup.jinja2',
+                           form=form,
+                           template='form-template')
+
+
+@app.route('/login', methods=('GET', 'POST'))
+def login():
+    form = forms.LoginForm()
+    if form.validate_on_submit():
+        email = form.email.data
+        password = form.password.data
+        totp = form.totp.data
+        server = "http://mynginx:8000/api/login"
+        backend_response = requests.post(server,
+                                         json={'email': email,
+                                               'password': password, 'totp': totp},
+                                         headers={'Host': request.host})
+        if backend_response.status_code != HTTPStatus.OK:
+            return render_from_backend(backend_response)
+
+        access_token = json.loads(backend_response.text)["error"]
+
+        frontend_response = make_response(redirect('/'))
+        frontend_response.set_cookie('token', access_token)
+        return frontend_response
+    return render_template('login.jinja2',
+                           form=form,
+                           template='form-template')
+
+
+@app.route('/execute', methods=('GET', 'POST'))
+def execute():
+    if 'token' not in request.cookies:
+        return redirect('/login')
+
+    token = request.cookies['token']
+
+    form = forms.ExecuteForm()
+    if form.validate_on_submit():
+        code = form.code.data.encode().hex()
+        server = "http://mynginx:8000/api/execute"
+        backend_response = requests.post(server,
+                                         json={'code': code,
+                                               'token': token},
+                                         headers={'Host': request.host})
+        if backend_response.status_code != HTTPStatus.OK:
+            return render_from_backend(backend_response)
+
+        json_response = json.loads(backend_response.text)
+        return render_template('execute.jinja2',
+                               form=form,
+                               template='form-template',
+                               exit_code=bytes.fromhex(
+                                   json_response['exit_code']).decode(),
+                               stdout=bytes.fromhex(
+                                   json_response['stdout']).decode(),
+                               stderr=bytes.fromhex(json_response['stderr']).decode())
+    return render_template('execute.jinja2',
                            form=form,
                            template='form-template')
 
@@ -106,8 +163,8 @@ def confirm_email_submit(token):
                                template='form-template')
 
 
-@ app.route('/admin/approve_user/<token>', methods=('GET',))
-@ app.route('/admin/approve_user', methods=('POST',), defaults={'token': None})
+@app.route('/admin/approve_user/<token>', methods=('GET',))
+@app.route('/admin/approve_user', methods=('POST',), defaults={'token': None})
 def approve_user_submit(token):
     form = forms.ConfirmEmail()
     if form.validate_on_submit():

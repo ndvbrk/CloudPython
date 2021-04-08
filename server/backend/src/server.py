@@ -3,8 +3,8 @@ import os
 import secrets
 
 import pyotp
-from flask import Flask, jsonify, redirect, render_template, request, url_for
-from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
+from flask import Flask, jsonify, render_template, request, url_for
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer, TimedJSONWebSignatureSerializer
 from passlib.hash import pbkdf2_sha256
 
 from docker_wrap import run_code
@@ -13,8 +13,10 @@ from gmail import Gmail
 
 SECRET_KEY = secrets.token_hex(64)
 tokenizer = URLSafeTimedSerializer(SECRET_KEY)
+json_tokenizer = TimedJSONWebSignatureSerializer(SECRET_KEY, expires_in=60*15)
 EMAIL_CONFIRMATION_SALT = 'email-confirmation-salt'
 ADMIN_APPROVAL_SALT = 'admin-user-approval'
+LOGIN_SALT = 'login-salt'
 ADMINS_EMAIL = 'ndvbrk@gmail.com'
 EXECUTION_TIMEOUT_SECONDS = 10
 USER_OUT_MAX_SIZE = 4096  # Arbitrary limit
@@ -105,17 +107,17 @@ class User:
 
     def assert_execute(self, password, totp):
         if pbkdf2_sha256.verify(password, self.password_hash) is not True:
-            raise Unauthorised()
+            raise Unauthorised('Bad Password')
 
         if not self.email_verified:
-            raise Unauthorised()
+            raise Unauthorised('email not verified')
 
         if not self.verify_totp(totp):
-            raise Unauthorised()
+            raise Unauthorised('Bad TOTP')
 
         if not self.approved:
             # Consider FORBIDDEN instead?
-            raise Unauthorised()
+            raise Unauthorised('User not approved by admin')
 
 
 class UserDB:
@@ -214,20 +216,39 @@ class UserDB:
 user_database = UserDB()
 
 
+@app.route('/api/login', methods=['POST'])
+@rest_api
+@catch_errors
+def login():
+    json_data = DictWrapper(request.get_json(force=False))
+    email = json_data['email']
+    password = json_data['password']
+    totp = json_data['totp']
+    user_database.assert_execute(email, password, totp)
+    token = json_tokenizer.dumps(email, salt=LOGIN_SALT).decode('ascii')
+    return token
+
+
 @app.route('/api/execute', methods=['POST'])
 @rest_api
 @catch_errors
 def api_execute():
     json_data = DictWrapper(request.get_json(force=False))
-    email = json_data['email']
-    password = json_data['password']
-    totp = json_data['totp']
+    access_token = json_data['token']
     try:
         code = bytes.fromhex(json_data['code'])
     except ValueError:
         raise BadRequest()
 
-    user_database.assert_execute(email, password, totp)
+    try:
+        email = json_tokenizer.loads(
+            access_token.encode('ascii'), salt=LOGIN_SALT)
+    except (SignatureExpired) as e:
+        print(e)
+        raise Unauthorised('Access token expired')
+    except (BadSignature) as e:
+        print(e)
+        raise Unauthorised('Invalid access token')
 
     try:
         result = run_code(code, EXECUTION_TIMEOUT_SECONDS, USER_OUT_MAX_SIZE)

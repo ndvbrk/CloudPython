@@ -1,0 +1,19 @@
+{% extends 'index.html' %}
+{% from 'bootstrap/form.html' import render_field %}
+
+{% block title %}Log in{% endblock %}
+
+{% block content %}
+<div class="formwrapper">
+  <h2 class="title">Login</h2>
+  <form method="POST" action="/login">
+      {{ form.csrf_token }}
+      {{ render_field(form.email) }}
+      {{ render_field(form.password) }}
+      {{ render_field(form.totp) }}
+      {{ render_field(form.submit) }}
+      <a href="{{ url_for('signup') }}" class="btn btn-warning" role="button">Not registered? Sign up</a>
+  </form>
+</div>
+
+{% endblock %}

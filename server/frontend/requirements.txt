@@ -7,3 +7,4 @@ requests
 qrcode==6.1
 Pillow==7.1.1
 Bootstrap-Flask==1.5.1
+Flask-Login==0.3.2

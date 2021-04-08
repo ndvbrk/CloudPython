@@ -18,8 +18,11 @@ class BadRequest(ServiceError):
 
 class Unauthorised(ServiceError):
 
-    def __init__(self):
-        super().__init__('Unauthorised', HTTPStatus.UNAUTHORIZED)
+    def __init__(self, reason=None):
+        if reason:
+            super().__init__('Unauthorised: ' + reason, HTTPStatus.UNAUTHORIZED)
+        else:
+            super().__init__('Unauthorised', HTTPStatus.UNAUTHORIZED)
 
 
 class Created(ServiceError):
@@ -35,6 +38,7 @@ class PayloadTooLarge(ServiceError):
         super().__init__(
             'Requested payload is too large.',
             HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+
 
 class UserKeyError(BadRequest):
     pass

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextField, SubmitField, PasswordField, HiddenField, IntegerField
+from wtforms import StringField, TextField, SubmitField, PasswordField, HiddenField, IntegerField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 
 
@@ -26,7 +26,7 @@ class ConfirmEmail(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class ExecuteForm(FlaskForm):
+class LoginForm(FlaskForm):
     """Execute code please."""
     email = StringField('Email', [
         Email(message='Not a valid email address.'),
@@ -35,9 +35,13 @@ class ExecuteForm(FlaskForm):
         DataRequired(message="Please enter a password."),
         Length(min=4, message=('Password is too short')),
     ])
-    body = TextField('Message', [
-        DataRequired(),
-        Length(min=4, message=('Your message is too short.'))])
     totp = IntegerField('totp', [DataRequired()])
+    # recaptcha = RecaptchaField()
+    submit = SubmitField('Submit')
+
+
+class ExecuteForm(FlaskForm):
+    """Execute code please."""
+    code = TextAreaField('Code', [DataRequired()])
     # recaptcha = RecaptchaField()
     submit = SubmitField('Submit')
