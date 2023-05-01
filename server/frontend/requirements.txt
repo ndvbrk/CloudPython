@@ -1,5 +1,5 @@
 # Basic requirement for web server
-Flask==1.1.1
+Flask==2.3.2
 uwsgi==2.0.18
 flask-wtf
 wtforms[email]
